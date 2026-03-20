@@ -1,0 +1,10 @@
+{
+  "name": "build-log",
+  "version": "1.0.0",
+  "description": "Zero-latency build-in-public journal for Claude Code",
+  "type": "module",
+  "engines": { "node": ">=18.0.0" },
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  }
+}
