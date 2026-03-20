@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync, unlinkSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 // Cache module will be tested with a temp file path
-const CACHE_PATH = join(import.meta.dirname, '..', 'lib', 'test-cache.json');
+const CACHE_PATH = join(import.meta.dirname, '..', 'lib', 'test-cache-cache.json');
 
 import * as cache from '../lib/cache.js';
 

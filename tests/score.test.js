@@ -5,7 +5,7 @@ import { unlinkSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import * as cache from '../lib/cache.js';
 
-const CACHE_PATH = join(import.meta.dirname, '..', 'lib', 'test-cache.json');
+const CACHE_PATH = join(import.meta.dirname, '..', 'lib', 'test-cache-score.json');
 
 beforeEach(() => {
   if (existsSync(CACHE_PATH)) unlinkSync(CACHE_PATH);
