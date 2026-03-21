@@ -21,7 +21,7 @@ beforeEach(async () => {
   feed = await import('../lib/seo-feed.js');
   feed.setSeoPath(TEST_SEO);
   feed.setConfig({
-    whateverai_projects: ['WhateverAI', 'whateverops', 'seo-engine'],
+    branded_projects: ['WhateverAI', 'whateverops', 'seo-engine'],
     default_tenant: 'personal-brand',
     seo_score_threshold: 7
   });

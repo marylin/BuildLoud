@@ -7,7 +7,7 @@ import { neon } from '@neondatabase/serverless';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execSync } from 'node:child_process';
+
 import { loadEnv } from '../lib/env.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -90,13 +90,6 @@ Write in a warm, authentic voice. This is for the builder to review, not for pub
   writeFileSync(weeklyPath, weeklyContent);
   console.log(`Digest written to ${weeklyPath}`);
 
-  // Git commit
-  try {
-    execSync(`git add -A && git commit -m "digest: ${week} weekly summary"`, {
-      cwd: BUILD_LOG, stdio: 'ignore', timeout: 10000
-    });
-  } catch {}
-
   // Mark entries as included in digest
   for (const entry of entries) {
     try {
@@ -116,7 +109,7 @@ Write in a warm, authentic voice. This is for the builder to review, not for pub
           'Authorization': `Bearer ${resendKey}`
         },
         body: JSON.stringify({
-          from: 'Journey Logger <journal@whateverai.com>',
+          from: process.env.DIGEST_FROM_EMAIL || 'Journey Logger <noreply@example.com>',
           to: [digestEmail],
           subject: `Weekly Build Log: ${week}`,
           html: `<pre style="font-family: monospace; white-space: pre-wrap;">${digestContent}</pre>`

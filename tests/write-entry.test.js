@@ -16,7 +16,7 @@ beforeEach(() => {
   mkdirSync(TEST_DIR, { recursive: true });
   cache.setCachePath(CACHE_PATH);
   md.setBasePath(TEST_DIR);
-  writeEntry.setOptions({ skipGit: true, skipDb: true, skipSeo: true });
+  writeEntry.setOptions({ skipDb: true, skipSeo: true });
 });
 
 afterEach(() => {
