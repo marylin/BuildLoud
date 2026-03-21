@@ -25,21 +25,25 @@ function getISOWeek(date) {
   return `${d.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
 }
 
-async function main() {
+export async function generateDigest({ since, email = false } = {}) {
   const sql = neon(process.env.DATABASE_URL);
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
-  // Fetch last 7 days of entries
-  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  // Fetch entries since the given date, or last 7 days by default
+  const sinceDate = since || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const entries = await sql`
     SELECT * FROM journey_entries
-    WHERE created_at >= ${since}
+    WHERE created_at >= ${sinceDate}
     ORDER BY social_score DESC
   `;
 
   if (!entries.length) {
     console.log('No entries this week. Skipping digest.');
-    return;
+    const week = getISOWeek(new Date());
+    const weeklyDir = join(BUILD_LOG, 'weekly');
+    mkdirSync(weeklyDir, { recursive: true });
+    const weeklyPath = join(weeklyDir, `${week}.md`);
+    return { entries: 0, weeklyPath };
   }
 
   // Call Haiku for digest narrative
@@ -97,29 +101,38 @@ Write in a warm, authentic voice. This is for the builder to review, not for pub
     } catch {}
   }
 
-  // Send email via Resend (if configured)
-  const resendKey = process.env.RESEND_API_KEY;
-  const digestEmail = process.env.DIGEST_EMAIL;
-  if (resendKey && digestEmail) {
-    try {
-      await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${resendKey}`
-        },
-        body: JSON.stringify({
-          from: process.env.DIGEST_FROM_EMAIL || 'Journey Logger <noreply@example.com>',
-          to: [digestEmail],
-          subject: `Weekly Build Log: ${week}`,
-          html: `<pre style="font-family: monospace; white-space: pre-wrap;">${digestContent}</pre>`
-        })
-      });
-      console.log(`Email sent to ${digestEmail}`);
-    } catch (err) {
-      console.error('Email failed:', err.message);
+  // Send email via Resend (if configured and email flag is true)
+  if (email) {
+    const resendKey = process.env.RESEND_API_KEY;
+    const digestEmail = process.env.DIGEST_EMAIL;
+    if (resendKey && digestEmail) {
+      try {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${resendKey}`
+          },
+          body: JSON.stringify({
+            from: process.env.DIGEST_FROM_EMAIL || 'Journey Logger <noreply@example.com>',
+            to: [digestEmail],
+            subject: `Weekly Build Log: ${week}`,
+            html: `<pre style="font-family: monospace; white-space: pre-wrap;">${digestContent}</pre>`
+          })
+        });
+        console.log(`Email sent to ${digestEmail}`);
+      } catch (err) {
+        console.error('Email failed:', err.message);
+      }
     }
   }
+
+  return { entries: entries.length, weeklyPath };
 }
 
-main().catch(console.error);
+// Standalone entry point
+const isDirectRun = process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'));
+if (isDirectRun) {
+  const hasEmail = !!(process.env.RESEND_API_KEY && process.env.DIGEST_EMAIL);
+  generateDigest({ email: hasEmail }).catch(console.error);
+}
