@@ -1,5 +1,5 @@
 // tests/write-entry.test.js
-import { describe, it, beforeEach, afterEach } from 'node:test';
+import { describe, it, beforeEach, afterEach, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdirSync, rmSync, existsSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
@@ -61,5 +61,40 @@ describe('write-entry orchestrator', () => {
       source: 'stop_hook', summary: 'New project!'
     });
     assert.ok(result.milestones.includes('new_project'));
+  });
+
+  it('humanizes entries with score >= 5 (public_summary in metadata)', async () => {
+    process.env.ANTHROPIC_API_KEY = 'test-key';
+    globalThis.fetch = mock.fn(() => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({
+        content: [{ text: '{"public_summary": "Shipped something cool."}' }]
+      })
+    }));
+    // Manual journal + insight type = score 6 (base 3 + manual 3)
+    const result = await writeEntry.write({
+      project: 'testproj', type: 'insight',
+      source: 'manual_journal', summary: 'Discovered a key pattern.'
+    });
+    // Read the entry back -- score should be >= 5 and metadata should have public_summary
+    assert.ok(result.score >= 5, `Expected score >= 5, got ${result.score}`);
+    globalThis.fetch = undefined;
+    delete process.env.ANTHROPIC_API_KEY;
+  });
+
+  it('does not humanize entries with score < 5', async () => {
+    // Pre-seed the cache so the project is not "new" (which would add +2 notable)
+    cache.recordSession('lowscoreproj', new Date().toISOString().slice(0, 10));
+    process.env.ANTHROPIC_API_KEY = 'test-key';
+    const fetchCalls = [];
+    globalThis.fetch = mock.fn((...args) => { fetchCalls.push(args); return Promise.resolve({ ok: true, json: () => Promise.resolve({ content: [{ text: '{}' }] }) }); });
+    await writeEntry.write({
+      project: 'lowscoreproj', type: 'bugfix',
+      source: 'stop_hook', summary: 'Fixed a typo.'
+    });
+    // bugfix + stop_hook on existing project = score 1, no humanize call
+    assert.equal(fetchCalls.length, 0);
+    globalThis.fetch = undefined;
+    delete process.env.ANTHROPIC_API_KEY;
   });
 });

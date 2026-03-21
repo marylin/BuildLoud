@@ -1,5 +1,5 @@
 // tests/integration.test.js
-import { describe, it, beforeEach, afterEach } from 'node:test';
+import { describe, it, beforeEach, afterEach, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdirSync, rmSync, readFileSync, existsSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
@@ -82,5 +82,34 @@ describe('integration: full write pipeline', () => {
       project: 'proj', type: 'feature', source: 'stop_hook', summary: 'Polished UI.'
     }, new Date('2026-03-21T10:00:00Z'));
     assert.ok(r4.milestones.includes('persistence')); // 4 consecutive days, streak count >= 3
+  });
+
+  it('humanizes high-scoring entries with public_summary in markdown', async () => {
+    process.env.ANTHROPIC_API_KEY = 'test-key';
+    globalThis.fetch = mock.fn(() => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({
+        content: [{ text: '{"public_summary": "Launched a new project this week. The momentum is real."}' }]
+      })
+    }));
+
+    const result = await writeEntry.write({
+      project: 'newproject',
+      type: 'milestone',
+      source: 'manual_journal',
+      summary: 'Shipped v1.0 with 15 integrations and full test coverage.'
+    }, new Date('2026-03-20T16:00:00Z'));
+
+    // milestone(4) + manual(3) + new_project(2) = 9
+    assert.ok(result.score >= 7, `Expected score >= 7, got ${result.score}`);
+
+    // Check markdown contains the entry
+    const mdPath = join(TEST_DIR, '2026', '03', '2026-03-20.md');
+    assert.ok(existsSync(mdPath));
+    const content = readFileSync(mdPath, 'utf8');
+    assert.ok(content.includes('Shipped v1.0'));
+
+    globalThis.fetch = undefined;
+    delete process.env.ANTHROPIC_API_KEY;
   });
 });
