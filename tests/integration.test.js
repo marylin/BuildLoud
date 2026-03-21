@@ -17,7 +17,7 @@ beforeEach(() => {
   mkdirSync(TEST_DIR, { recursive: true });
   cache.setCachePath(CACHE_PATH);
   md.setBasePath(TEST_DIR);
-  writeEntry.setOptions({ skipGit: true, skipSupabase: true, skipSeo: true });
+  writeEntry.setOptions({ skipGit: true, skipDb: true, skipSeo: true });
   seoFeed.setConfig({
     whateverai_projects: [],
     default_tenant: 'test',

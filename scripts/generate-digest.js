@@ -1,8 +1,9 @@
 // scripts/generate-digest.js
-// Generates weekly digest from Supabase entries.
+// Generates weekly digest from database entries.
 // Run: node scripts/generate-digest.js
 // Or triggered by n8n workflow.
 
+import { neon } from '@neondatabase/serverless';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -25,17 +26,16 @@ function getISOWeek(date) {
 }
 
 async function main() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_ANON_KEY;
+  const sql = neon(process.env.DATABASE_URL);
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
   // Fetch last 7 days of entries
   const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const res = await fetch(
-    `${url}/rest/v1/journey_entries?created_at=gte.${since}&order=social_score.desc`,
-    { headers: { 'apikey': key, 'Authorization': `Bearer ${key}` } }
-  );
-  const entries = await res.json();
+  const entries = await sql`
+    SELECT * FROM journey_entries
+    WHERE created_at >= ${since}
+    ORDER BY social_score DESC
+  `;
 
   if (!entries.length) {
     console.log('No entries this week. Skipping digest.');
@@ -100,15 +100,7 @@ Write in a warm, authentic voice. This is for the builder to review, not for pub
   // Mark entries as included in digest
   for (const entry of entries) {
     try {
-      await fetch(`${url}/rest/v1/journey_entries?id=eq.${entry.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': key,
-          'Authorization': `Bearer ${key}`
-        },
-        body: JSON.stringify({ digest_included_in: week })
-      });
+      await sql`UPDATE journey_entries SET digest_included_in = ${week} WHERE id = ${entry.id}`;
     } catch {}
   }
 

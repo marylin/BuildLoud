@@ -13,7 +13,7 @@ Zero-latency build-in-public journal for Claude Code. Auto-captures session summ
            ▼                   ▼               ▼
 ┌─────────────────────────────────────────────────────────┐
 │                    STORAGE LAYER                         │
-│  Local Markdown Journal    │    Supabase (journey_entries)  │
+│  Local Markdown Journal    │    Neon DB (journey_entries)    │
 │  build-log/2026/03/20.md   │    structured, queryable     │
 └──────────┬───────────────────────────────┬──────────────┘
            │                               │
@@ -36,7 +36,7 @@ Zero-latency build-in-public journal for Claude Code. Auto-captures session summ
    ```bash
    cp .env.example .env
    ```
-2. **Database:** Run the migration in the Supabase SQL Editor:
+2. **Database:** Run the migration in the Neon SQL Editor (or via psql):
    ```
    migrations/001-journey-entries.sql
    ```
@@ -64,13 +64,13 @@ build-log/
 │   ├── markdown.js           # Write entries to daily markdown files
 │   ├── score.js              # Deterministic scoring + milestone detection
 │   ├── seo-feed.js           # Push high-scoring entries to seo-engine
-│   ├── supabase.js           # Supabase REST client + retry queue
-│   └── write-entry.js        # Orchestrator: score → markdown → supabase → seo-feed
+│   ├── db.js                 # Neon serverless client + retry queue
+│   └── write-entry.js        # Orchestrator: score → markdown → db → seo-feed
 ├── scripts/
 │   ├── journey-accumulate.sh # PostToolUse hook: grep commit → append JSONL
 │   ├── journey-capture.js    # Stop hook: Haiku summary → write-entry pipeline
 │   ├── generate-digest.js    # Weekly digest generator
-│   └── sync-pr-entries.js    # Pull PR entries from Supabase → local markdown
+│   └── sync-pr-entries.js    # Pull PR entries from Neon → local markdown
 ├── migrations/
 │   └── 001-journey-entries.sql
 ├── n8n/
@@ -81,7 +81,7 @@ build-log/
 │   ├── markdown.test.js
 │   ├── score.test.js
 │   ├── seo-feed.test.js
-│   ├── supabase.test.js
+│   ├── db.test.js
 │   └── write-entry.test.js
 ├── weekly/                   # Weekly digest output (YYYY-WXX.md)
 ├── .env.example
@@ -117,6 +117,6 @@ Deterministic scoring on entry creation. No AI calls.
 ## Dependencies
 
 - **Node.js 18+** (native `fetch`, `node:test`, `node:fs`)
-- **Supabase** instance with `journey_entries` table
+- **Neon PostgreSQL database** with `journey_entries` table
 - **Anthropic API key** (Haiku for session summarization + weekly digests)
-- **Zero npm packages** — uses only Node.js built-ins
+- **`@neondatabase/serverless`** — the only external dependency

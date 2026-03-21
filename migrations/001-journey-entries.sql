@@ -1,6 +1,6 @@
 -- migrations/001-journey-entries.sql
 -- Journey Logger: build-in-public journal entries
--- Run this in your Supabase SQL editor or via supabase db push
+-- Run this in your Neon SQL editor or via psql
 
 create table if not exists journey_entries (
   id uuid primary key default gen_random_uuid(),
@@ -25,9 +25,3 @@ create index if not exists idx_journey_created on journey_entries(created_at des
 create index if not exists idx_journey_score on journey_entries(social_score desc);
 create index if not exists idx_journey_project on journey_entries(project);
 create index if not exists idx_journey_milestone on journey_entries(project, type, created_at);
-
--- RLS: disable for now (single-user system, accessed via anon key)
--- Enable and add policies if this becomes multi-user
-alter table journey_entries enable row level security;
-create policy "Allow all for anon" on journey_entries
-  for all using (true) with check (true);

@@ -1,4 +1,4 @@
-// tests/supabase.test.js
+// tests/db.test.js
 import { describe, it, beforeEach, afterEach, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync, unlinkSync, existsSync } from 'node:fs';
@@ -6,11 +6,11 @@ import { join } from 'node:path';
 
 const QUEUE_PATH = join(import.meta.dirname, 'test-pending-sync.jsonl');
 
-let supabase;
+let db;
 beforeEach(async () => {
   if (existsSync(QUEUE_PATH)) unlinkSync(QUEUE_PATH);
-  supabase = await import('../lib/supabase.js');
-  supabase.setQueuePath(QUEUE_PATH);
+  db = await import('../lib/db.js');
+  db.setQueuePath(QUEUE_PATH);
 });
 afterEach(() => {
   if (existsSync(QUEUE_PATH)) unlinkSync(QUEUE_PATH);
@@ -18,13 +18,13 @@ afterEach(() => {
 });
 
 describe('buildPayload', () => {
-  it('converts entry to Supabase row format', () => {
+  it('converts entry to DB row format', () => {
     const entry = {
       project: 'test', type: 'feature', source: 'stop_hook',
       summary: 'Built something', notable: false, social_score: 3,
       tags: ['test'], metadata: { branch: 'main' }
     };
-    const payload = supabase.buildPayload(entry);
+    const payload = db.buildPayload(entry);
     assert.equal(payload.project, 'test');
     assert.equal(payload.type, 'feature');
     assert.equal(payload.social_score, 3);
@@ -35,7 +35,7 @@ describe('buildPayload', () => {
 describe('retry queue', () => {
   it('enqueues failed entry to JSONL file', () => {
     const entry = { project: 'test', type: 'feature', source: 'stop_hook', summary: 'x' };
-    supabase.enqueue(entry);
+    db.enqueue(entry);
     const lines = readFileSync(QUEUE_PATH, 'utf8').trim().split('\n');
     assert.equal(lines.length, 1);
     const parsed = JSON.parse(lines[0]);
@@ -43,9 +43,9 @@ describe('retry queue', () => {
   });
 
   it('reads pending queue', () => {
-    supabase.enqueue({ project: 'a', type: 'feature', source: 'stop_hook', summary: 'x' });
-    supabase.enqueue({ project: 'b', type: 'bugfix', source: 'stop_hook', summary: 'y' });
-    const pending = supabase.readQueue();
+    db.enqueue({ project: 'a', type: 'feature', source: 'stop_hook', summary: 'x' });
+    db.enqueue({ project: 'b', type: 'bugfix', source: 'stop_hook', summary: 'y' });
+    const pending = db.readQueue();
     assert.equal(pending.length, 2);
   });
 
@@ -56,7 +56,7 @@ describe('retry queue', () => {
       JSON.stringify({ project: 'old', _queued_at: old }) + '\n' +
       JSON.stringify({ project: 'recent', _queued_at: recent }) + '\n'
     );
-    const pending = supabase.readQueue();
+    const pending = db.readQueue();
     assert.equal(pending.length, 1);
     assert.equal(pending[0].project, 'recent');
   });
@@ -66,16 +66,16 @@ describe('retry queue', () => {
     const origWarn = console.warn;
     console.warn = (...args) => warnings.push(args.join(' '));
     for (let i = 0; i < 51; i++) {
-      supabase.enqueue({ project: `p${i}`, type: 'feature', source: 'stop_hook', summary: 'x' });
+      db.enqueue({ project: `p${i}`, type: 'feature', source: 'stop_hook', summary: 'x' });
     }
-    supabase.readQueue(); // triggers warning
+    db.readQueue(); // triggers warning
     console.warn = origWarn;
     assert.ok(warnings.some(w => w.includes('50')));
   });
 
   it('clears queue after successful processing', () => {
-    supabase.enqueue({ project: 'a', type: 'feature', source: 'stop_hook', summary: 'x' });
-    supabase.clearQueue();
+    db.enqueue({ project: 'a', type: 'feature', source: 'stop_hook', summary: 'x' });
+    db.clearQueue();
     assert.equal(existsSync(QUEUE_PATH), false);
   });
 });
