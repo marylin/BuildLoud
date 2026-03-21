@@ -97,4 +97,17 @@ describe('write-entry orchestrator', () => {
     globalThis.fetch = undefined;
     delete process.env.ANTHROPIC_API_KEY;
   });
+
+  it('skips duplicate entries by fingerprint', async () => {
+    const entry = {
+      project: 'dedup-test', type: 'feature', source: 'stop_hook',
+      summary: 'Same summary for dedup testing'
+    };
+    const first = await writeEntry.write(entry);
+    assert.ok(first.markdownPath);
+    assert.ok(first.score >= 0);
+
+    const second = await writeEntry.write({ ...entry });
+    assert.equal(second.deduplicated, true);
+  });
 });
