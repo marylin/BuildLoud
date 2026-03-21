@@ -13,7 +13,7 @@ Zero-latency build-in-public journal for Claude Code. Auto-captures session summ
            ▼                   ▼               ▼
 ┌─────────────────────────────────────────────────────────┐
 │                    STORAGE LAYER                         │
-│  Local Markdown Journal    │    Supabase (journey_entries)│
+│  Local Markdown Journal    │    Supabase (journey_entries)  │
 │  build-log/2026/03/20.md   │    structured, queryable     │
 └──────────┬───────────────────────────────┬──────────────┘
            │                               │
@@ -36,7 +36,7 @@ Zero-latency build-in-public journal for Claude Code. Auto-captures session summ
    ```bash
    cp .env.example .env
    ```
-2. **Database:** Run the migration in the Supabase SQL editor:
+2. **Database:** Run the migration in the Supabase SQL Editor:
    ```
    migrations/001-journey-entries.sql
    ```
@@ -117,6 +117,6 @@ Deterministic scoring on entry creation. No AI calls.
 ## Dependencies
 
 - **Node.js 18+** (native `fetch`, `node:test`, `node:fs`)
-- **Supabase** project with `journey_entries` table
-- **Anthropic API key** (Haiku model for session summarization)
-- **No npm packages** — zero external dependencies
+- **Supabase** instance with `journey_entries` table
+- **Anthropic API key** (Haiku for session summarization + weekly digests)
+- **Zero npm packages** — uses only Node.js built-ins
