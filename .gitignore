@@ -1,5 +1,35 @@
-node_modules/
-.env
+# Runtime / generated data
+lib/config.json
 lib/cache.json
 pending-sync.jsonl
+
+# Journal entries (personal, generated per-user)
+2[0-9][0-9][0-9]/
+weekly/*.md
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Test artifacts
 tests/test-*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
