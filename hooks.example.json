@@ -1,0 +1,30 @@
+{
+  "_comment": "Merge these into your ~/.claude/settings.json under the 'hooks' key. Replace /path/to/journey-logger with the actual path to your clone.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash(git commit*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /path/to/journey-logger/scripts/journey-accumulate.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /path/to/journey-logger/scripts/journey-capture.js",
+            "timeout": 30000,
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 {
-  "name": "build-log",
-  "version": "1.0.0",
+  "name": "journey-logger",
+  "version": "1.1.0",
   "description": "Zero-latency build-in-public journal for Claude Code",
   "type": "module",
   "engines": {
@@ -8,6 +8,26 @@
   },
   "scripts": {
     "test": "node --test tests/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marylin/journey-logger.git"
+  },
+  "author": "Marylin Ritchie <marylin@whateverai.com>",
+  "license": "AGPL-3.0-only",
+  "keywords": [
+    "build-in-public",
+    "journal",
+    "claude-code",
+    "developer-tools",
+    "content-automation",
+    "seo",
+    "neon",
+    "ai-agents"
+  ],
+  "homepage": "https://github.com/marylin/journey-logger",
+  "bugs": {
+    "url": "https://github.com/marylin/journey-logger/issues"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2"
