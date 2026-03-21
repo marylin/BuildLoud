@@ -14,7 +14,10 @@ beforeEach(() => {
   cache.setCachePath(CACHE_PATH);
 });
 afterEach(() => {
-  if (existsSync(CACHE_PATH)) unlinkSync(CACHE_PATH);
+  for (const suffix of ['.json', '.bak', '.tmp']) {
+    const p = CACHE_PATH.replace('.json', suffix);
+    if (existsSync(p)) unlinkSync(p);
+  }
 });
 
 describe('cache', () => {
@@ -98,5 +101,61 @@ describe('cache', () => {
     cache.recordBlocker('proj');
     assert.equal(cache.hasRecentBlocker('proj'), true);
     assert.equal(cache.hasRecentBlocker('other'), false);
+  });
+
+  it('creates backup on save', () => {
+    cache.recordSession('proj');
+    cache.recordSession('proj', '2026-03-19');
+    const bakPath = CACHE_PATH.replace('.json', '.bak');
+    assert.ok(existsSync(bakPath));
+  });
+
+  it('recovers from corrupted cache using backup', () => {
+    cache.recordSession('proj');
+    writeFileSync(CACHE_PATH, '{invalid json!!!');
+    const data = cache.load();
+    assert.ok(data.week);
+  });
+
+  it('resets to default when both files corrupted', () => {
+    writeFileSync(CACHE_PATH, 'garbage');
+    writeFileSync(CACHE_PATH.replace('.json', '.bak'), 'also garbage');
+    const data = cache.load();
+    assert.equal(data.totalEntries, 0);
+  });
+
+  it('stores lastCapture timestamp on recordSession', () => {
+    cache.recordSession('proj');
+    const data = cache.load();
+    assert.ok(data.lastCapture);
+    assert.match(data.lastCapture, /^\d{4}-\d{2}-\d{2}T/);
+  });
+
+  it('getStats returns correct shape', () => {
+    cache.recordSession('alpha', '2026-03-18');
+    cache.recordSession('alpha', '2026-03-19');
+    cache.recordSession('alpha', '2026-03-20');
+    cache.recordSession('beta', '2026-03-20');
+    const stats = cache.getStats();
+    assert.equal(typeof stats.totalEntries, 'number');
+    assert.equal(typeof stats.weeklyCount, 'number');
+    assert.equal(typeof stats.currentStreak, 'number');
+    assert.ok(stats.lastCapture);
+    assert.ok(Array.isArray(stats.projectsThisWeek));
+    assert.equal(stats.currentStreak, 3);
+  });
+
+  it('stores and checks recent_fingerprints', () => {
+    cache.addFingerprint('abc123');
+    assert.ok(cache.hasFingerprint('abc123'));
+    assert.ok(!cache.hasFingerprint('xyz789'));
+  });
+
+  it('caps fingerprints at 50', () => {
+    for (let i = 0; i < 55; i++) cache.addFingerprint(`fp${i}`);
+    const data = cache.load();
+    assert.equal(data.recent_fingerprints.length, 50);
+    assert.ok(!cache.hasFingerprint('fp0'));
+    assert.ok(cache.hasFingerprint('fp54'));
   });
 });

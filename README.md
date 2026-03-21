@@ -80,6 +80,35 @@ npm install
 - **Weekly digest:** `node scripts/generate-digest.js` (or auto via n8n)
 - **Sync PR entries:** `node scripts/sync-pr-entries.js`
 
+## CLI
+
+Journey Logger includes a CLI for querying entries and managing pipeline health. Install globally with `npm link` or run via `npx journey`.
+
+```bash
+# Pipeline health
+journey status              # Local health: last capture, streak, queue, errors
+journey status --db         # Include DB connectivity check
+
+# Query entries
+journey top                 # Top 10 entries this week
+journey top --month         # Top 10 this month
+journey top --all -n 20     # Top 20 all time
+journey search <query>      # Search local markdown files
+journey search <query> --db # Also search DB
+
+# Sync
+journey sync status         # Show local/DB/queue counts
+journey sync pull           # Pull DB entries to local markdown
+journey sync push           # Push pending queue entries to DB
+
+# Content
+journey rehumanize          # List entries needing humanization
+journey rehumanize --run    # Execute humanization via Haiku
+journey digest              # Generate weekly digest
+journey digest --preview    # Preview without generating
+journey digest --email      # Generate and send via email
+```
+
 ## Scoring
 
 Deterministic scoring on entry creation. No AI calls.
@@ -108,17 +137,36 @@ Deterministic scoring on entry creation. No AI calls.
 
 If you run [seo-engine](https://github.com/marylin/seo-engine) for content automation, Journey Logger can auto-feed high-scoring entries as topic seeds.
 
-Set `SEO_ENGINE_PATH` in `.env` to point to your seo-engine directory. Entries scoring 7+ are appended to the appropriate tenant's `topic-seeds.md`. Without this env var, the integration is silently disabled.
+**Setup:**
+1. Set `SEO_ENGINE_PATH` in `.env` to point to your seo-engine directory
+2. In `lib/config.json`, add project names to `branded_projects` — these route to the `whateverai` tenant. All other projects route to `default_tenant`.
+
+**How it works:**
+- Entries scoring 7+ (configurable via `seo_score_threshold` in config.json) are appended to the tenant's `topic-seeds.md`
+- The raw `summary` is pushed (not the humanized version) — seo-engine handles content enhancement and publishing
+- If `topic-seeds.md` doesn't exist in the tenant directory, the push silently skips — seo-engine manages its own tenant setup
+
+**Without `SEO_ENGINE_PATH`**, the integration is silently disabled. No errors, no side effects.
 
 ## File Structure
 
 ```
 journey-logger/
+├── bin/
+│   └── journey.js            # CLI entrypoint (npm link → `journey` command)
 ├── lib/
+│   ├── cli/
+│   │   ├── status.js         # `journey status` — pipeline health
+│   │   ├── top.js            # `journey top` — top entries by score
+│   │   ├── search.js         # `journey search` — full-text search
+│   │   ├── sync.js           # `journey sync` — local/DB sync operations
+│   │   ├── rehumanize.js     # `journey rehumanize` — re-run humanization
+│   │   └── digest.js         # `journey digest` — weekly digest generation
 │   ├── cache.js              # Local cache for scoring + milestones
 │   ├── config.example.json   # Template config (copy to config.json)
 │   ├── db.js                 # Neon serverless client + retry queue
 │   ├── env.js                # Shared .env loader (no external deps)
+│   ├── errors.js             # Shared error types and handling utilities
 │   ├── humanize.js           # Human-readable formatting utilities
 │   ├── markdown.js           # Write entries to daily markdown files
 │   ├── score.js              # Deterministic scoring + milestone detection

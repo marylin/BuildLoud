@@ -86,4 +86,14 @@ describe('seo-feed', () => {
     const result = feed.shouldPush(7);
     assert.equal(result, true);
   });
+
+  it('does not append duplicate entry to topic-seeds', () => {
+    const entry = { project: 'whatai', social_score: 8, summary: 'Unique seed entry' };
+    feed.pushEntry(entry, '2026-03-21');
+    feed.pushEntry(entry, '2026-03-21');
+    const seedsPath = join(TEST_SEO, 'tenants', 'personal-brand', 'topic-seeds.md');
+    const content = readFileSync(seedsPath, 'utf8');
+    const matches = content.match(/Unique seed entry/g);
+    assert.equal(matches.length, 1);
+  });
 });

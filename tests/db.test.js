@@ -79,3 +79,23 @@ describe('retry queue', () => {
     assert.equal(existsSync(QUEUE_PATH), false);
   });
 });
+
+describe('getQueueStats', () => {
+  it('returns zeros when no queue file', () => {
+    const stats = db.getQueueStats();
+    assert.deepEqual(stats, { pending: 0, oldest: null, newest: null });
+  });
+
+  it('returns correct stats for populated queue', () => {
+    const ts1 = '2026-03-20T10:00:00Z';
+    const ts2 = '2026-03-21T10:00:00Z';
+    writeFileSync(QUEUE_PATH,
+      JSON.stringify({ project: 'a', _queued_at: ts1 }) + '\n' +
+      JSON.stringify({ project: 'b', _queued_at: ts2 }) + '\n'
+    );
+    const stats = db.getQueueStats();
+    assert.equal(stats.pending, 2);
+    assert.equal(stats.oldest, ts1);
+    assert.equal(stats.newest, ts2);
+  });
+});

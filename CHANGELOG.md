@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-03-21
+
+### Added
+- `journey` CLI with 6 subcommands: `status`, `top`, `search`, `sync`, `rehumanize`, `digest`
+- Error logging module (`lib/errors.js`) — persistent log at `~/.claude/journey-errors.log`
+- Cross-source deduplication via SHA-256 content fingerprinting
+- Cache resilience: atomic writes, backup rotation, corruption recovery
+- `getStats()` export for pipeline health reporting
+- `getQueueStats()` export for retry queue visibility
+- Retry queue drop logging when entries expire after 7 days
+- Digest window anchoring via `last_digest_date` in cache
+- seo-feed idempotency check (no duplicate appends)
+
+### Changed
+- `generate-digest.js` exports core logic for CLI wrapping; standalone mode preserved
+- `journey-capture.js` refactored: extracted `processFile()`, added orphan recovery
+
+### Fixed
+- Accumulator writes `message` but capture reads `msg` — now reads `message || msg`
+- Orphaned `journey-session-processing.jsonl` files now recovered on next session
+
 ## [1.1.0] - 2026-03-20
 
 ### Added
