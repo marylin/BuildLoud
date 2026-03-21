@@ -64,7 +64,7 @@
 // tests/errors.test.js
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, unlinkSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, unlinkSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const LOG_PATH = join(import.meta.dirname, 'test-journey-errors.log');
