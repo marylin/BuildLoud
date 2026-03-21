@@ -17,9 +17,9 @@ Automatically journals GitHub pull request activity (opened and merged).
 3. **Code** ("Extract PR Data") — extracts `title`, `body`, `repo.name`, `head.ref`, `action`, `number`, `changed_files`
 4. **HTTP Request** ("Haiku Summary") — POST to `https://api.anthropic.com/v1/messages` with PR context; returns JSON `{summary, type}`
 5. **Code** ("Parse Response") — extracts `summary` and `type` from the Haiku response
-6. **HTTP Request** ("Write to Supabase") — POST to `{{SUPABASE_URL}}/rest/v1/journey_entries` with the entry payload
+6. **HTTP Request** ("Write to Neon DB") — POST to Neon DB via SQL (or use n8n Postgres node with `DATABASE_URL`)
 
-The workflow only writes to Supabase. Local markdown sync is handled separately by
+The workflow only writes to the database. Local markdown sync is handled separately by
 `scripts/sync-pr-entries.js` (run on-demand or via cron).
 
 ---
@@ -31,10 +31,10 @@ Compiles the week's journal entries into a narrative digest and emails it.
 **Node chain:**
 
 1. **Cron Trigger** — fires every Monday at 8:00 AM
-2. **HTTP Request** ("Supabase Query") — GET last 7 days of `journey_entries`, ordered by `social_score` desc
+2. **HTTP Request** ("Neon DB Query") — GET last 7 days of `journey_entries`, ordered by `social_score` desc
 3. **HTTP Request** ("Haiku Digest") — POST to Anthropic API with entry summaries; generates week summary, top 5 moments, and suggested narratives
 4. **HTTP Request** ("Resend Email") — POST to `https://api.resend.com/emails` with the digest HTML
-5. **HTTP Request** ("Supabase Update") — PATCH each entry's `digest_included_in` field with the ISO week string
+5. **HTTP Request** ("Neon DB Update") — PATCH each entry's `digest_included_in` field with the ISO week string
 
 For local markdown output, use `scripts/generate-digest.js` instead (writes to `weekly/YYYY-WXX.md`
 and git-commits the result).
@@ -48,8 +48,7 @@ Configure these in **n8n Settings > Credentials** (never hardcode):
 | Credential | Where to get it |
 |---|---|
 | **Anthropic API Key** | https://console.anthropic.com/settings/keys |
-| **Supabase URL** | Project Settings > API > URL |
-| **Supabase anon key** | Project Settings > API > anon/public key |
+| **Neon DB connection string** | Neon Console > Connection Details > Connection string |
 | **Resend API Key** | https://resend.com/api-keys |
 | **GitHub Webhook Secret** | Repo Settings > Webhooks > Secret |
 
