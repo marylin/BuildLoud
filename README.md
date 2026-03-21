@@ -1,6 +1,17 @@
-# Journey Logger (build-log)
+# Journey Logger
 
-Zero-latency build-in-public journal for Claude Code. Auto-captures session summaries and PR events via hooks, supports manual capture via `/journal`, and feeds high-scoring entries to seo-engine for content amplification.
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
+[![Node.js 18+](https://img.shields.io/badge/node-18%2B-green.svg)](https://nodejs.org)
+
+Zero-latency build-in-public journal for [Claude Code](https://claude.ai/claude-code). Auto-captures coding session summaries via hooks, supports manual capture via `/journal`, and optionally feeds high-scoring entries to content pipelines.
+
+## How It Works
+
+1. **You code normally.** Claude Code hooks silently track commits during your session.
+2. **Session ends.** The Stop hook summarizes what happened via Claude Haiku and writes a journal entry.
+3. **Entries are scored.** A deterministic scoring system (0-10) flags wins, insights, milestones.
+4. **You browse your journal.** Daily markdown files at `YYYY/MM/YYYY-MM-DD.md`.
+5. **Weekly digest.** Top moments compiled and emailed to you every Monday.
 
 ## Architecture
 
@@ -14,7 +25,7 @@ Zero-latency build-in-public journal for Claude Code. Auto-captures session summ
 ┌─────────────────────────────────────────────────────────┐
 │                    STORAGE LAYER                         │
 │  Local Markdown Journal    │    Neon DB (journey_entries)    │
-│  build-log/2026/03/20.md   │    structured, queryable     │
+│  2026/03/2026-03-20.md     │    structured, queryable       │
 └──────────┬───────────────────────────────┬──────────────┘
            │                               │
            ▼                               ▼
@@ -30,65 +41,44 @@ Zero-latency build-in-public journal for Claude Code. Auto-captures session summ
 └─────────────────────────────────────────────────────────┘
 ```
 
+## Installation
+
+```bash
+git clone https://github.com/marylin/journey-logger.git
+cd journey-logger
+npm install
+```
+
 ## Setup
 
-1. **Environment:** Copy `.env.example` to `.env` and fill in credentials:
+1. **Environment:**
    ```bash
    cp .env.example .env
+   # Edit .env — set DATABASE_URL and ANTHROPIC_API_KEY (required)
    ```
-2. **Database:** Run the migration in the Neon SQL Editor (or via psql):
+
+2. **Config:**
+   ```bash
+   cp lib/config.example.json lib/config.json
+   # Edit lib/config.json — add your project names to branded_projects
    ```
-   migrations/001-journey-entries.sql
-   ```
-3. **Hooks:** Auto-registered in `~/.claude/settings.json`:
-   - `PostToolUse` on `git commit` — runs `journey-accumulate.sh` (appends commit data to JSONL)
-   - `Stop` — runs `journey-capture.js` async (Haiku summary → score → write entry)
-4. **n8n workflows** (optional): Import from `n8n/` directory — see `n8n/README.md`
+
+3. **Database:** Run `migrations/001-journey-entries.sql` in the [Neon SQL Editor](https://console.neon.tech)
+
+4. **Claude Code Hooks:** Merge the entries from `hooks.example.json` into your `~/.claude/settings.json`. Replace `/path/to/journey-logger` with the actual path to your clone.
+
+   See `hooks.example.json` for the exact configuration.
+
+5. **n8n Workflows** (optional): See `n8n/README.md` for PR hook and weekly digest automation.
 
 ## Usage
 
-- **Auto-capture:** Just use Claude Code normally. Sessions with commits produce entries in `YYYY/MM/` after the session ends.
-- **Manual:** `/journal your note here` or `/j your note here`
-- **Browse:** Open daily files like `2026/03/2026-03-20.md`
-- **Weekly digest:** `node scripts/generate-digest.js` or auto via n8n (Monday 8 AM)
+- **Auto-capture:** Use Claude Code normally. Sessions with commits produce journal entries automatically.
+- **Manual capture:** `/journal shipped auth module — key insight: middleware order matters`
+- **Quick alias:** `/j your note here`
+- **Browse journal:** Open `2026/03/2026-03-20.md` in your editor
+- **Weekly digest:** `node scripts/generate-digest.js` (or auto via n8n)
 - **Sync PR entries:** `node scripts/sync-pr-entries.js`
-
-## File Structure
-
-```
-build-log/
-├── lib/
-│   ├── cache.js              # Local cache for scoring + milestones
-│   ├── config.json           # Tenant routing table + settings
-│   ├── env.js                # Shared .env loader (no external deps)
-│   ├── markdown.js           # Write entries to daily markdown files
-│   ├── score.js              # Deterministic scoring + milestone detection
-│   ├── seo-feed.js           # Push high-scoring entries to seo-engine
-│   ├── db.js                 # Neon serverless client + retry queue
-│   └── write-entry.js        # Orchestrator: score → markdown → db → seo-feed
-├── scripts/
-│   ├── journey-accumulate.sh # PostToolUse hook: grep commit → append JSONL
-│   ├── journey-capture.js    # Stop hook: Haiku summary → write-entry pipeline
-│   ├── generate-digest.js    # Weekly digest generator
-│   └── sync-pr-entries.js    # Pull PR entries from Neon → local markdown
-├── migrations/
-│   └── 001-journey-entries.sql
-├── n8n/
-│   └── README.md             # Instructions for n8n workflow setup
-├── tests/
-│   ├── cache.test.js
-│   ├── integration.test.js
-│   ├── markdown.test.js
-│   ├── score.test.js
-│   ├── seo-feed.test.js
-│   ├── db.test.js
-│   └── write-entry.test.js
-├── weekly/                   # Weekly digest output (YYYY-WXX.md)
-├── .env.example
-├── .gitignore
-├── package.json
-└── README.md
-```
 
 ## Scoring
 
@@ -114,9 +104,66 @@ Deterministic scoring on entry creation. No AI calls.
 | **5-6** | Included in weekly digest |
 | **0-4** | Journal only |
 
+## seo-engine Integration (Optional)
+
+If you run [seo-engine](https://github.com/marylin/seo-engine) for content automation, Journey Logger can auto-feed high-scoring entries as topic seeds.
+
+Set `SEO_ENGINE_PATH` in `.env` to point to your seo-engine directory. Entries scoring 7+ are appended to the appropriate tenant's `topic-seeds.md`. Without this env var, the integration is silently disabled.
+
+## File Structure
+
+```
+journey-logger/
+├── lib/
+│   ├── cache.js              # Local cache for scoring + milestones
+│   ├── config.example.json   # Template config (copy to config.json)
+│   ├── db.js                 # Neon serverless client + retry queue
+│   ├── env.js                # Shared .env loader (no external deps)
+│   ├── humanize.js           # Human-readable formatting utilities
+│   ├── markdown.js           # Write entries to daily markdown files
+│   ├── score.js              # Deterministic scoring + milestone detection
+│   ├── seo-feed.js           # Push high-scoring entries to seo-engine
+│   └── write-entry.js        # Orchestrator: score → markdown → db → seo-feed
+├── scripts/
+│   ├── journey-accumulate.sh # PostToolUse hook: grep commit → append JSONL
+│   ├── journey-capture.js    # Stop hook: Haiku summary → write-entry pipeline
+│   ├── generate-digest.js    # Weekly digest generator
+│   └── sync-pr-entries.js    # Pull PR entries from Neon → local markdown
+├── migrations/
+│   └── 001-journey-entries.sql
+├── n8n/
+│   ├── README.md             # Instructions for n8n workflow setup
+│   ├── journey-pr-hook.json
+│   └── journey-weekly-digest.json
+├── tests/
+│   ├── cache.test.js
+│   ├── db.test.js
+│   ├── humanize.test.js
+│   ├── integration.test.js
+│   ├── markdown.test.js
+│   ├── score.test.js
+│   ├── seo-feed.test.js
+│   └── write-entry.test.js
+├── .env.example
+├── .gitignore
+├── .node-version
+├── hooks.example.json        # Claude Code hook config (merge into settings.json)
+├── package.json
+├── CHANGELOG.md
+├── CODE_OF_CONDUCT.md
+├── CONTRIBUTING.md
+├── LICENSE
+├── SECURITY.md
+└── README.md
+```
+
 ## Dependencies
 
-- **Node.js 18+** (native `fetch`, `node:test`, `node:fs`)
-- **Neon PostgreSQL database** with `journey_entries` table
-- **Anthropic API key** (Haiku for session summarization + weekly digests)
-- **`@neondatabase/serverless`** — the only external dependency
+- **Node.js 18+** (native `fetch`, `node:test`)
+- **[Neon](https://neon.tech)** PostgreSQL database
+- **[Anthropic](https://console.anthropic.com)** API key (Haiku model)
+- **`@neondatabase/serverless`** — the only npm dependency
+
+## License
+
+[AGPL-3.0](LICENSE) — Copyright 2026 WhateverAI (Marylin Ritchie)
