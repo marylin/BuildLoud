@@ -8,7 +8,7 @@
 
 Journey Logger v1.1 has 18 identified gaps across capture, storage, intelligence, and output layers. The two highest-severity gaps (silent hook failures, retry queue data loss) risk losing journal entries without any user-visible signal. The remaining medium-severity gaps degrade reliability, usability, and pipeline correctness.
 
-This design addresses 13 of 18 gaps through two coordinated changes:
+This design addresses 11 of 18 gaps through two coordinated changes:
 1. Reliability hardening of existing modules
 2. A zero-dependency CLI (`journey`) that unifies operations and makes pipeline health observable
 
@@ -119,9 +119,10 @@ logError(context: string, error: Error | string) → void
 **Changes to:** `lib/db.js`
 
 - Before dropping expired entries (>7 days), write them to error log with `QUEUE_DROP` prefix
-- `processPendingQueue()` returns `{ processed, dropped, remaining }`
-- New export: `getQueueStats()` → `{ pending, oldest, newest }`
+- `processPendingQueue()` remains internal (not exported); its return value is used only within `db.js`
+- New public export: `getQueueStats()` → `{ pending, oldest, newest }`
   - Reads `pending-sync.jsonl` without loading into memory (line count + first/last timestamps)
+  - This is the only new public API from db.js; the status command calls this
 
 ### 2.3 Cache resilience (fixes #7)
 
@@ -132,18 +133,22 @@ logError(context: string, error: Error | string) → void
 - `load()`: validate JSON structure with expected keys check
   - If corrupted: try `cache.json.bak`
   - If both bad: reset to empty state, log error via `logError`
+- Add `lastCapture` field to cache schema — `recordSession()` sets `data.lastCapture = new Date().toISOString()` on each write
 - New export: `getStats()` → `{ totalEntries, weeklyCount, currentStreak, lastCapture, projectsThisWeek }`
+  - `currentStreak`: maximum `count` value across all projects in `data.streaks` (the longest active streak)
 
 ### 2.4 Orphaned JSONL recovery (fixes #4)
 
 **Changes to:** `scripts/journey-capture.js`
 
 On startup, before processing current session:
-1. Scan `~/.claude/` for `journey-session-processing-*.jsonl` files older than 5 minutes
-2. Process each through the normal summary → write-entry pipeline
-3. Clean up processed files
-4. Also check for `journey-session.jsonl` older than 1 hour (no active session heuristic)
+1. Check for `~/.claude/journey-session-processing.jsonl` (the single processing file created by atomic rename). If it exists and is older than 5 minutes, treat as orphaned.
+2. Process orphaned file through the normal summary → write-entry pipeline
+3. Clean up processed file
+4. Also check for `~/.claude/journey-session.jsonl` older than 1 hour (no active session heuristic)
 5. Log recoveries to error log with `RECOVERY` prefix
+
+**Pre-existing bug fix:** The accumulator (`journey-accumulate.sh`) writes `message` as the JSON key, but `journey-capture.js` reads `c.msg`. Fix the capture script to read `c.message || c.msg` for backwards compatibility during this change.
 
 ### 2.5 Cross-source deduplication (fixes #1, #18)
 
@@ -211,7 +216,7 @@ Queries Neon for top-scoring entries.
 
 Two-tier search:
 
-1. **Local** (default): recursive grep across `YYYY/MM/*.md` files matching query string
+1. **Local** (default): recursive grep across `YYYY/MM/*.md` files matching query string. Searches from the repo root (same `BASE_PATH` used by `lib/markdown.js`).
 2. **DB** (`--db` flag): `WHERE summary ILIKE '%query%' OR metadata::text ILIKE '%query%'`
 
 Output: matching lines with file path and line number (local) or score + date + summary (DB).
@@ -222,10 +227,10 @@ Generalizes `sync-pr-entries.js` for all sources.
 
 **Subcommands:**
 - `journey sync pull`: query DB entries missing locally → write markdown via `lib/markdown.js`
-  - Match by: date + project + fingerprint
+  - Fingerprints are computed at sync time from DB row data (`project + date + summary.slice(0, 100)`), not stored in DB. Compared against fingerprints computed from existing local markdown files.
   - Humanize if score >= 5 and no `public_summary` in metadata
-- `journey sync push`: read local markdown entries → insert to DB if not present by fingerprint
-- `journey sync status`: show counts — local-only, DB-only, synced
+- `journey sync push`: re-insert locally-queued entries that failed to reach DB (processes `pending-sync.jsonl`). Does NOT parse markdown back into structured entries — that would require a markdown parser and the local format is lossy (no tags, no metadata). For full DB ↔ local parity, use `sync pull` from a DB that has the authoritative entries.
+- `journey sync status`: show counts — local-only (by date scan), DB-only (by query), synced
 
 **Note:** `sync-pr-entries.js` becomes a thin wrapper calling `journey sync pull --source pr_hook` or is deprecated with a note.
 
@@ -235,7 +240,7 @@ Finds entries qualifying for humanization (score >= 5) but missing `public_summa
 
 **Modes:**
 - `journey rehumanize`: dry run — list candidates with score, date, project
-- `journey rehumanize --run`: execute — call Haiku for each, update DB metadata + local markdown
+- `journey rehumanize --run`: execute — call Haiku for each, update DB metadata. For local markdown, append a `> Public: ...` blockquote below the original entry (append-only, consistent with journal design — no in-place edits).
 - `journey rehumanize --id <uuid>`: target specific entry
 
 **Rate limiting:** 2 calls/second (500ms delay between Haiku requests) to avoid API throttling.
@@ -252,6 +257,11 @@ Replaces direct `node scripts/generate-digest.js` invocation.
 - `journey digest --email`: generate and send via Resend
 
 **After generation:** stores `last_digest_date` in cache for anchored windows.
+
+**Email behavior:** The refactored core logic (exported function) accepts an `{ email: boolean }` option:
+- Standalone script (`node scripts/generate-digest.js`): passes `email: true` when `RESEND_API_KEY` + `DIGEST_EMAIL` are set (preserves current behavior for n8n)
+- CLI (`journey digest`): passes `email: false` by default; `--email` flag overrides to `true`
+- This avoids surprise emails when using the CLI interactively
 
 **Note:** `generate-digest.js` is refactored to export its core logic; `journey digest` calls it. The script remains runnable standalone for n8n compatibility.
 
