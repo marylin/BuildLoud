@@ -49,6 +49,16 @@ cd journey-logger
 npm install
 ```
 
+### Claude Code Skills (Optional)
+
+Install the skill pack for `/journal`, `/j`, and `/journal-publish` commands:
+
+```bash
+/plugin add github:marylin/journey-logger/journey-logger-skills
+```
+
+See [`journey-logger-skills/README.md`](journey-logger-skills/README.md) for details.
+
 ## Setup
 
 1. **Environment:**
@@ -183,6 +193,11 @@ journey-logger/
 │   ├── README.md             # Instructions for n8n workflow setup
 │   ├── journey-pr-hook.json
 │   └── journey-weekly-digest.json
+├── journey-logger-skills/       # Claude Code skill pack (installable)
+│   ├── README.md               # Skill pack docs + install instructions
+│   ├── journal.md              # /journal — manual journal entry
+│   ├── j.md                    # /j — shortcut alias
+│   └── journal-publish.md      # /journal-publish — publish-ready content
 ├── tests/
 │   ├── cache.test.js
 │   ├── db.test.js
