@@ -19,6 +19,9 @@ package-lock.json
 # Test artifacts
 tests/test-*
 
+# Backup files
+*.bak
+
 # OS
 .DS_Store
 Thumbs.db

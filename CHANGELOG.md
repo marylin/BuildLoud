@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+## [1.3.0] - 2026-03-22
+
+### Added
+- `journey-logger-skills/` -- Claude Code skill pack for plugin distribution (`/plugin add github:marylin/journey-logger/journey-logger-skills`)
+- `/journal` skill -- manual journal entry capture (quick mode and guided mode)
+- `/j` skill -- shortcut alias for `/journal`
+- `/journal-publish` skill -- browse and publish high-scoring entries
+
 ## [1.2.0] - 2026-03-21
 
 ### Added

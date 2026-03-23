@@ -1,3 +1,8 @@
+---
+name: journal-publish
+description: /journal-publish -- Publish-Ready Journal Content. Browse high-scoring journal entries and generate public-ready versions for social media, blog, or newsletter.
+---
+
 # /journal-publish -- Publish-Ready Journal Content
 
 Generate or refine public-ready versions of journal entries for social media, blog, or newsletter.

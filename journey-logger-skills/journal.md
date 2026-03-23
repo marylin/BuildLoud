@@ -1,3 +1,8 @@
+---
+name: journal
+description: /journal -- Build-in-Public Journal Entry. Capture coding session moments to local markdown journal and optionally Neon DB. Quick mode with arguments or guided mode without.
+---
+
 # /journal -- Build-in-Public Journal Entry
 
 Capture a moment from your build-in-public journey. Writes to local markdown journal and optionally to Neon DB.
