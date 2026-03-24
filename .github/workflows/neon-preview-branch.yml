@@ -1,0 +1,50 @@
+name: Neon Preview Branch
+
+# Only create Neon DB branches for the develop→master release PR.
+# Agent branches (agent/*) never trigger this because they never PR to master.
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened, closed]
+
+jobs:
+  create-neon-branch:
+    name: Create Neon branch
+    if: |
+      github.event.action != 'closed' &&
+      github.head_ref == 'develop'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Neon branch
+        id: neon
+        uses: neondatabase/create-branch-action@v5
+        with:
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          branch_name: preview/pr-${{ github.event.number }}
+
+      - name: Comment branch info on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branchUrl = `https://console.neon.tech/app/projects/${{ secrets.NEON_PROJECT_ID }}/branches`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `### 🐘 Neon Preview Branch\n\nBranch \`preview/pr-${{ github.event.number }}\` created for this PR.\n\n[View in Neon Console](${branchUrl})`
+            });
+
+  delete-neon-branch:
+    name: Delete Neon branch
+    if: |
+      github.event.action == 'closed' &&
+      github.head_ref == 'develop'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete Neon branch
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          branch: preview/pr-${{ github.event.number }}
