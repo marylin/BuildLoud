@@ -1,0 +1,65 @@
+name: Paperclip CI Notify
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  workflow_run:
+    workflows: ["*"]
+    types: [completed]
+  deployment_status:
+
+jobs:
+  notify-paperclip:
+    if: >
+      (github.event_name == 'pull_request') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure') ||
+      (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'failure')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR status
+        if: github.event_name == 'pull_request'
+        run: |
+          sleep 120  # Wait 2 min for CI checks to start
+          STATUS=$(gh pr checks ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json state --jq '.[].state' 2>/dev/null | sort -u)
+          if echo "$STATUS" | grep -q "FAILURE"; then
+            echo "CI_FAILED=true" >> $GITHUB_ENV
+            echo "FAILURE_TYPE=ci_check_failed" >> $GITHUB_ENV
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Detect merge conflicts
+        if: github.event_name == 'pull_request'
+        run: |
+          MERGEABLE=$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json mergeable --jq '.mergeable' 2>/dev/null)
+          if [ "$MERGEABLE" = "CONFLICTING" ]; then
+            echo "CI_FAILED=true" >> $GITHUB_ENV
+            echo "FAILURE_TYPE=merge_conflict" >> $GITHUB_ENV
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log workflow failure
+        if: github.event_name == 'workflow_run'
+        run: |
+          echo "CI_FAILED=true" >> $GITHUB_ENV
+          echo "FAILURE_TYPE=workflow_failed" >> $GITHUB_ENV
+          echo "FAILED_WORKFLOW=${{ github.event.workflow_run.name }}" >> $GITHUB_ENV
+
+      - name: Log deployment failure
+        if: github.event_name == 'deployment_status'
+        run: |
+          echo "CI_FAILED=true" >> $GITHUB_ENV
+          echo "FAILURE_TYPE=deploy_failed" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=${{ github.event.deployment_status.environment }}" >> $GITHUB_ENV
+
+      - name: Create failure marker
+        if: env.CI_FAILED == 'true'
+        run: |
+          echo "FAILURE: ${{ env.FAILURE_TYPE }} on ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "This will be picked up by Paperclip PM/QA agents on next heartbeat."
+          # Future: POST to Paperclip API when authenticated endpoint is available
+          # curl -X POST http://100.65.114.59:3100/api/companies/COMPANY_ID/issues \
+          #   -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
+          #   -d "{\"title\":\"[CI] ${{ env.FAILURE_TYPE }} on PR #${{ github.event.pull_request.number }}\", ...}"
+
