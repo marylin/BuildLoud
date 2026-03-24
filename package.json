@@ -10,7 +10,10 @@
     "journey": "./bin/journey.js"
   },
   "scripts": {
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "prepare": "simple-git-hooks"
   },
   "repository": {
     "type": "git",
@@ -34,5 +37,24 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2"
+  },
+  "devDependencies": {
+    "eslint": "^9.28.0",
+    "@eslint/js": "^9.28.0",
+    "prettier": "^3.5.3",
+    "simple-git-hooks": "^2.13.0",
+    "lint-staged": "^16.1.0"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yaml,yml}": [
+      "prettier --write"
+    ]
   }
 }
