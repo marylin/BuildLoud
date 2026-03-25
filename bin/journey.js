@@ -18,6 +18,7 @@ for (const w of envResult.warnings) {
 }
 
 const commands = {
+  log: '../lib/cli/log.js',
   status: '../lib/cli/status.js',
   top: '../lib/cli/top.js',
   search: '../lib/cli/search.js',
@@ -33,6 +34,7 @@ if (!command || command === '--help' || command === '-h') {
   console.log(`Usage: journey <command> [options]
 
 Commands:
+  log           Write a manual journal entry
   status        Pipeline health report
   top           Query top entries from DB
   search        Search entries (local + DB)

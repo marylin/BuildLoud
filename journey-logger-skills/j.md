@@ -1,8 +1,6 @@
 ---
 name: j
-description: /j -- Journal Entry (shortcut). Alias for /journal with the same arguments.
+description: Use when quickly logging a journal entry — shortcut alias for /journal.
 ---
 
-# /j -- Journal Entry (shortcut)
-
-This is an alias for `/journal`. Run `/journal $ARGUMENTS` with the same arguments.
+Alias for `/journal`. Run `/journal $ARGUMENTS` with the same arguments.
