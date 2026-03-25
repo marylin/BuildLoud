@@ -86,3 +86,38 @@ describe('sync status output', () => {
     assert.equal(db.getQueueStats().pending, 1);
   });
 });
+
+describe('pullEntry null guards (spec 1.5)', () => {
+  it('handles null summary without crashing', async () => {
+    const { pullEntry } = await import('../lib/cli/sync.js');
+    const row = {
+      created_at: '2026-03-20T10:00:00Z',
+      project: 'test', type: 'feature', source: 'stop_hook',
+      summary: null, social_score: 3, metadata: {}
+    };
+    const result = pullEntry(row, TMP);
+    assert.equal(typeof result, 'boolean');
+  });
+
+  it('handles null metadata without crashing', async () => {
+    const { pullEntry } = await import('../lib/cli/sync.js');
+    const row = {
+      created_at: '2026-03-20T10:00:00Z',
+      project: 'test', type: 'feature', source: 'stop_hook',
+      summary: 'valid summary', social_score: 3, metadata: null
+    };
+    const result = pullEntry(row, TMP);
+    assert.equal(typeof result, 'boolean');
+  });
+
+  it('skips entry with null created_at', async () => {
+    const { pullEntry } = await import('../lib/cli/sync.js');
+    const row = {
+      created_at: null,
+      project: 'test', type: 'feature', source: 'stop_hook',
+      summary: 'valid', social_score: 3, metadata: {}
+    };
+    const result = pullEntry(row, TMP);
+    assert.equal(result, false);
+  });
+});

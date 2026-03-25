@@ -97,3 +97,13 @@ describe('seo-feed', () => {
     assert.equal(matches.length, 1);
   });
 });
+
+describe('error handling (spec 1.6)', () => {
+  it('handles null config gracefully', () => {
+    feed.setConfig(null);
+    // routeTenant and shouldPush should not crash
+    const result = feed.pushEntry({ social_score: 8, summary: 'test', project: 'x' }, '2026-03-20');
+    // May return false since config reload might fail in test env, but should NOT throw
+    assert.equal(typeof result, 'boolean');
+  });
+});
