@@ -32,6 +32,17 @@
         ]
       }
     ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Check if ~/.claude/journey/config.md exists. If it does, read the notification preference. If notification is 'silent', do nothing. If notification is 'nudge' or 'batch': read the last 3 days of entries from ~/.claude/journey/entries/YYYY/MM/ and count entries scoring 5+ that haven't been reviewed. If there are any, say ONE brief line like: 'You have N notable journal entries from recent sessions — run /journal-review when ready.' Do NOT interrupt the user's work beyond this single line.",
+            "timeout": 10000
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
