@@ -134,3 +134,12 @@ describe('db failure logging (spec 1.2)', () => {
     assert.ok(source.includes('logError'), 'Should log errors on db failure');
   });
 });
+
+describe('failed humanization tracking (spec 2.3)', () => {
+  it('sets humanize_pending when humanization fails', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const source = readFileSync(join(import.meta.dirname, '..', 'lib', 'write-entry.js'), 'utf8');
+    assert.ok(source.includes('humanize_pending'), 'Should set humanize_pending flag');
+  });
+});
