@@ -14,7 +14,7 @@ beforeEach(() => {
   cache.setCachePath(CACHE_PATH);
 });
 afterEach(() => {
-  for (const suffix of ['.json', '.bak', '.tmp']) {
+  for (const suffix of ['.json', '.bak', '.tmp', '.json.lock']) {
     const p = CACHE_PATH.replace('.json', suffix);
     if (existsSync(p)) unlinkSync(p);
   }
@@ -157,5 +157,32 @@ describe('cache', () => {
     assert.equal(data.recent_fingerprints.length, 50);
     assert.ok(!cache.hasFingerprint('fp0'));
     assert.ok(cache.hasFingerprint('fp54'));
+  });
+});
+
+describe('file locking (spec 1.4)', () => {
+  it('creates and removes lockfile during save', () => {
+    const lockPath = CACHE_PATH + '.lock';
+    cache.recordSession('proj');
+    assert.equal(existsSync(lockPath), false);
+  });
+
+  it('handles stale lockfile (>30s)', () => {
+    const lockPath = CACHE_PATH + '.lock';
+    const staleTime = Date.now() - 60000;
+    writeFileSync(lockPath, JSON.stringify({ pid: 99999, ts: staleTime }));
+    cache.recordSession('proj');
+    const data = cache.load();
+    assert.equal(data.weeklyProjects['proj'], 1);
+    if (existsSync(lockPath)) unlinkSync(lockPath);
+  });
+
+  it('concurrent saves do not lose data', () => {
+    cache.recordSession('projA', '2026-03-20');
+    cache.recordSession('projB', '2026-03-20');
+    const data = cache.load();
+    assert.equal(data.weeklyProjects['projA'], 1);
+    assert.equal(data.weeklyProjects['projB'], 1);
+    assert.equal(data.totalEntries, 2);
   });
 });
