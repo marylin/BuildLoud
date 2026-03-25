@@ -3,27 +3,15 @@
 ## Prerequisites
 
 - Node.js 18+
-- A [Neon](https://neon.tech) PostgreSQL database
-- An [Anthropic](https://console.anthropic.com) API key (for session summaries)
+- Claude Code (for testing skills and hooks)
+
+That's it. No database, no API keys, no accounts to create.
 
 ## Setup
 
 1. Fork and clone the repo
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Copy config files:
-   ```bash
-   cp .env.example .env
-   cp lib/config.example.json lib/config.json
-   ```
-4. Fill in `.env` with your credentials
-5. Edit `lib/config.json` with your project names
-6. Run the database migration:
-   ```
-   # Paste contents of migrations/001-journey-entries.sql into Neon SQL Editor
-   ```
+2. Run `/journey-init` in Claude Code to set up your voice profile
+3. Merge `hooks.example.json` into `~/.claude/settings.json` (optional, for auto-capture)
 
 ## Testing
 
@@ -31,7 +19,7 @@
 npm test
 ```
 
-All 46+ tests run locally with no external API calls. Tests use temp directories and are fully isolated.
+102 tests across 17 suites. All run locally with no external calls. Tests use temp directories and are fully isolated.
 
 ## Making Changes
 
@@ -45,15 +33,25 @@ All 46+ tests run locally with no external API calls. Tests use temp directories
 ## Code Style
 
 - ESM modules (`import`/`export`, `"type": "module"`)
-- Node.js built-in APIs preferred over external packages
-- Only external dependency: `@neondatabase/serverless`
+- Node.js built-in APIs only — no external packages
 - Tests use `node:test` and `node:assert/strict`
 - No TypeScript — plain JavaScript
 
+## Writing Skills
+
+Skills are markdown files in `journey-logger-skills/`. Each has YAML frontmatter:
+
+```yaml
+---
+name: skill-name
+description: One-line description (shown in Claude Code's skill list).
+---
+```
+
+Keep descriptions short and scannable. The skill body is instructions for Claude to follow.
+
 ## What Not to Commit
 
-- `.env` files (secrets)
-- `lib/config.json` (personal project list)
-- `lib/cache.json` (runtime state)
-- Journal entries (`2026/`, `weekly/`)
-- `package-lock.json` (generated per-user)
+- `~/.claude/journey/` (user journal data)
+- `lib/cache.json` (runtime state, if present locally)
+- `package-lock.json` (no dependencies to lock)

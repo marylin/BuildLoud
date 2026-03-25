@@ -10,16 +10,14 @@ If you discover a security vulnerability in Journey Logger, please report it res
 
 ## Scope
 
-This policy covers the Journey Logger codebase itself:
-- `lib/` modules (scoring, caching, markdown writer, DB client, seo-feed)
-- `scripts/` (hook scripts, digest generator)
-- Database migrations
+This policy covers the Journey Logger codebase:
+- `lib/` modules (scoring, caching, markdown writer, error logging)
+- `scripts/` (hook scripts for commit and PR capture)
+- `journey-logger-skills/` (Claude Code skill definitions)
 
 Out of scope (report to their respective maintainers):
-- Neon PostgreSQL infrastructure
-- Anthropic API
-- n8n workflows running on your own infrastructure
-- Resend email service
+- Claude Code itself
+- Your operating system's filesystem
 
 ## Response
 

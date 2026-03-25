@@ -1,53 +1,57 @@
-# journey-logger v2
+# Journey Logger v2
 
-Zero-dependency build-in-public journal for Claude Code. No API keys, no database, no npm dependencies.
+Zero-dependency build-in-public journal for Claude Code. No API keys, no database, no npm packages.
 
 ## Storage
 
-- Entries: `~/.claude/journey/entries/YYYY-MM-DD.md` (one file per day)
-- Sessions: `~/.claude/journey-sessions/<session_id>.jsonl` (scratch, deleted after processing)
-- Cache: `~/.claude/journey/cache.json` (stats, streaks, fingerprints)
-- Errors: `~/.claude/journey/errors.log`
+All data lives under `~/.claude/journey/`:
 
-## CLI Commands (6 total)
+- `entries/YYYY/MM/YYYY-MM-DD.md` — journal entries (one file per day)
+- `weekly/YYYY-WNN.md` — weekly digests
+- `cache.json` — streaks, fingerprints, project stats
+- `errors.log` — error log with rotation
+
+Session scratch files: `~/.claude/journey-sessions/{session-id}.jsonl`
+
+## CLI
 
 ```
-journey log              # Write a manual journal entry
-journey status           # Local health report
-journey search <term>    # Search entries in markdown files
-journey doctor           # Diagnostic health check
-journey recover          # Process orphaned session files
-journey process-session  # Score session data (internal, used by agent hook)
+journey log "summary" --type TYPE    Log entry with scoring + milestone detection
+journey status                       Streaks, counts, pending sessions
+journey search <query>               Search journal entries by keyword
+journey doctor                       Check hooks, config, cache health
+journey recover                      Process orphaned session files
+journey process-session --file PATH  Score session data (internal, for agent hook)
 ```
 
-## Skills (Claude Code plugin — journey-logger-skills/)
+## Skills
 
-- `/journey-init`     — First-time setup: install hooks, create dirs
-- `/journal`          — Write or review today's entries
-- `/journal-review`   — Weekly review and reflection
-- `/journal-publish`  — Draft a build-in-public post from entries
-- `/journal-digest`   — Generate a digest summary
+- `/journey-init` — set up voice, notifications, platforms
+- `/journal` — log a build-in-public entry (quick or guided)
+- `/j` — shortcut for `/journal`
+- `/journal-review` — browse and curate entries by score
+- `/journal-publish` — rewrite entries for Twitter/LinkedIn/blog
+- `/journal-digest` — weekly narrative summary
 
-## Hooks (add to ~/.claude/settings.json)
+## Hooks
 
-- **PostToolUse** → `scripts/journey-accumulate.sh` — captures git commits
-- **PostToolUse** → `scripts/journey-notable.sh` — captures notable events (PR merges, deployments)
-- **Stop** → `node bin/journey.js process-session` — scores session data and outputs JSON for the agent hook
+- **PostToolUse** `Bash(git commit*)` → `scripts/journey-accumulate.sh`
+- **PostToolUse** `Bash(gh pr *)` → `scripts/journey-notable.sh`
+- **Stop** → agent hook: reads session, scores entries, writes in user's voice
+- **SessionStart** → prompt hook: nudge about unreviewed entries (if configured)
 
-See `hooks.example.json` for the exact configuration.
+See `hooks.example.json` for configuration.
 
 ## Key Modules
 
-- `lib/markdown.js` — writes daily `.md` files to `~/.claude/journey/entries/`
-- `lib/cache.js` — persistent stats with file locking and backup recovery
-- `lib/score.js` — entry scoring (1-10) and milestone detection
-- `lib/errors.js` — structured error logging with rotation
+- `lib/score.js` — deterministic scoring (0-10) and milestone detection
+- `lib/cache.js` — persistent local state with file locking and backup
+- `lib/markdown.js` — daily markdown writer
+- `lib/errors.js` — structured error logging with 500-line rotation
+- `lib/cli/process-session.js` — scoring pipeline for agent hook
 
 ## Development
 
 ```
-npm test          # Run all tests (node --test)
-npm run lint      # Check JS syntax
+npm test    # 102 tests, 17 suites (node:test, no external runner)
 ```
-
-Tests are in `tests/` and mirror source modules. All tests use `node:test` (no external test runner).

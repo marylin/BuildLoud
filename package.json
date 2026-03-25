@@ -1,7 +1,7 @@
 {
   "name": "journey-logger",
   "version": "2.0.0",
-  "description": "Zero-dependency build-in-public journal for Claude Code — local file storage, Claude Code plugin skills, no API keys required",
+  "description": "You build. Journey Logger documents it. A Claude Code plugin that auto-captures coding sessions into a build-in-public journal. Zero dependencies, zero API keys.",
   "type": "module",
   "engines": {
     "node": ">=18.0.0"
