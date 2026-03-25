@@ -111,3 +111,26 @@ describe('write-entry orchestrator', () => {
     assert.equal(second.deduplicated, true);
   });
 });
+
+describe('fingerprint timing (spec 1.1)', () => {
+  it('records fingerprint after successful write', async () => {
+    const entry = {
+      project: 'fp-timing-test', type: 'feature',
+      source: 'stop_hook', summary: 'Unique entry for fingerprint timing ' + Date.now()
+    };
+    const result1 = await writeEntry.write(entry);
+    assert.ok(result1.markdownPath);
+    const result2 = await writeEntry.write({ ...entry });
+    assert.equal(result2.deduplicated, true);
+  });
+});
+
+describe('db failure logging (spec 1.2)', () => {
+  it('source code logs db insert failures instead of silently swallowing', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const source = readFileSync(join(import.meta.dirname, '..', 'lib', 'write-entry.js'), 'utf8');
+    assert.ok(!source.includes('.catch(() => {})'), 'Silent catch should be removed');
+    assert.ok(source.includes('logError'), 'Should log errors on db failure');
+  });
+});
