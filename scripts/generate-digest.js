@@ -9,6 +9,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { loadEnv } from '../lib/env.js';
+import { callHaiku } from '../lib/api.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BUILD_LOG = join(__dirname, '..');
@@ -27,7 +28,6 @@ function getISOWeek(date) {
 
 export async function generateDigest({ since, email = false } = {}) {
   const sql = neon(process.env.DATABASE_URL);
-  const apiKey = process.env.ANTHROPIC_API_KEY;
 
   // Fetch entries since the given date, or last 7 days by default
   const sinceDate = since || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -64,21 +64,8 @@ Write in a warm, authentic voice. This is for the builder to review, not for pub
 
   let digestContent;
   try {
-    const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1024,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-    const data = await aiRes.json();
-    digestContent = data.content?.[0]?.text || 'Failed to generate digest.';
+    const result = await callHaiku(prompt, { max_tokens: 1024 });
+    digestContent = result.ok ? result.text : `Digest generation failed: ${result.error}`;
   } catch (err) {
     digestContent = `Digest generation failed: ${err.message}\n\nRaw entries:\n${entrySummaries}`;
   }

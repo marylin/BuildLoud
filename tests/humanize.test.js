@@ -3,10 +3,12 @@ import { describe, it, beforeEach, afterEach, mock } from 'node:test';
 import assert from 'node:assert/strict';
 
 let humanize, contentHash, selectTone, classifyPlatform, buildPrompt;
+let _resetCircuit;
 
 function mockFetchResponse(public_summary) {
   return mock.fn(() => Promise.resolve({
     ok: true,
+    status: 200,
     json: () => Promise.resolve({
       content: [{ text: JSON.stringify({ public_summary }) }]
     })
@@ -21,11 +23,14 @@ beforeEach(async () => {
   selectTone = mod.selectTone;
   classifyPlatform = mod.classifyPlatform;
   buildPrompt = mod.buildPrompt;
+  const apiMod = await import('../lib/api.js');
+  _resetCircuit = apiMod._resetCircuit;
 });
 
 afterEach(() => {
   mock.restoreAll();
   delete process.env.ANTHROPIC_API_KEY;
+  if (_resetCircuit) _resetCircuit();
 });
 
 function makeEntry(overrides = {}) {
@@ -111,6 +116,7 @@ describe('humanize', () => {
       capturedBody = opts.body;
       return Promise.resolve({
         ok: true,
+        status: 200,
         json: () => Promise.resolve({
           content: [{ text: '{"public_summary": "Angled content."}' }]
         })
@@ -123,7 +129,7 @@ describe('humanize', () => {
   });
 
   it('returns null on API failure', async () => {
-    globalThis.fetch = mock.fn(() => Promise.resolve({ ok: false }));
+    globalThis.fetch = mock.fn(() => Promise.resolve({ ok: false, status: 400 }));
     const entry = makeEntry();
     const result = await humanize(entry);
     assert.equal(result, null);
@@ -152,6 +158,7 @@ describe('humanize', () => {
       capturedBody = opts.body;
       return Promise.resolve({
         ok: true,
+        status: 200,
         json: () => Promise.resolve({
           content: [{ text: '{"public_summary": "Punchy content."}' }]
         })
@@ -169,6 +176,7 @@ describe('humanize', () => {
       capturedBody = opts.body;
       return Promise.resolve({
         ok: true,
+        status: 200,
         json: () => Promise.resolve({
           content: [{ text: '{"public_summary": "Professional content."}' }]
         })
@@ -178,5 +186,15 @@ describe('humanize', () => {
     await humanize(entry);
     assert.ok(capturedBody.includes('professional'));
     globalThis.fetch = undefined;
+  });
+});
+
+describe('api migration (spec 2.4)', () => {
+  it('uses callHaiku instead of direct fetch', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const source = readFileSync(join(import.meta.dirname, '..', 'lib', 'humanize.js'), 'utf8');
+    assert.ok(source.includes('callHaiku'), 'Should import and use callHaiku');
+    assert.ok(!source.includes("fetch('https://api.anthropic.com"), 'Should not contain direct fetch');
   });
 });
