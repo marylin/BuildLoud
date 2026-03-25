@@ -14,6 +14,8 @@ beforeEach(async () => {
 });
 afterEach(() => {
   if (existsSync(QUEUE_PATH)) unlinkSync(QUEUE_PATH);
+  const TMP_PATH = QUEUE_PATH + '.tmp';
+  if (existsSync(TMP_PATH)) unlinkSync(TMP_PATH);
   mock.restoreAll();
 });
 
@@ -97,5 +99,36 @@ describe('getQueueStats', () => {
     assert.equal(stats.pending, 2);
     assert.equal(stats.oldest, ts1);
     assert.equal(stats.newest, ts2);
+  });
+});
+
+describe('atomic queue rewrite (spec 1.3)', () => {
+  it('source uses .tmp file for queue rewrite', async () => {
+    const source = readFileSync(join(import.meta.dirname, '..', 'lib', 'db.js'), 'utf8');
+    assert.ok(source.includes('.tmp'), 'Should use .tmp file for atomic rewrite');
+    assert.ok(source.includes('renameSync'), 'Should rename .tmp to queue file');
+  });
+
+  it('recovers orphaned .tmp file when main queue missing', () => {
+    const TMP_PATH = QUEUE_PATH + '.tmp';
+    writeFileSync(TMP_PATH,
+      JSON.stringify({ project: 'orphan', _queued_at: new Date().toISOString(), type: 'feature', source: 'stop_hook', summary: 'x' }) + '\n'
+    );
+    const pending = db.readQueue();
+    assert.ok(pending.length >= 1);
+    assert.ok(pending.some(e => e.project === 'orphan'));
+    if (existsSync(TMP_PATH)) unlinkSync(TMP_PATH);
+  });
+
+  it('merges orphaned .tmp with existing queue', () => {
+    const TMP_PATH = QUEUE_PATH + '.tmp';
+    db.enqueue({ project: 'existing', type: 'feature', source: 'stop_hook', summary: 'x' });
+    writeFileSync(TMP_PATH,
+      JSON.stringify({ project: 'orphan', _queued_at: new Date().toISOString(), type: 'feature', source: 'stop_hook', summary: 'y' }) + '\n'
+    );
+    const pending = db.readQueue();
+    assert.ok(pending.some(e => e.project === 'existing'));
+    assert.ok(pending.some(e => e.project === 'orphan'));
+    if (existsSync(TMP_PATH)) unlinkSync(TMP_PATH);
   });
 });
