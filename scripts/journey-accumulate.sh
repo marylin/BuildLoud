@@ -59,7 +59,7 @@ esac
 case "$COMMAND" in
   *--amend*) exit 0 ;;
   *--dry-run*) exit 0 ;;
-  *-n*) exit 0 ;;
+  *" -n "*|*" -n") exit 0 ;;
 esac
 
 # Skip if it's wrapped in echo or printf (not a real commit)

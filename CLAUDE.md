@@ -32,7 +32,7 @@ journey process-session  # Score session data (internal, used by agent hook)
 
 - **PostToolUse** → `scripts/journey-accumulate.sh` — captures git commits
 - **PostToolUse** → `scripts/journey-notable.sh` — captures notable events (PR merges, deployments)
-- **Stop** → `node bin/journey.js process-session` — scores + writes entry at session end
+- **Stop** → `node bin/journey.js process-session` — scores session data and outputs JSON for the agent hook
 
 See `hooks.example.json` for the exact configuration.
 
