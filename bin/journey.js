@@ -20,12 +20,14 @@ if (!command || command === '--help' || command === '-h') {
   console.log(`Usage: journey <command> [options]
 
 Commands:
-  log              Write a manual journal entry
-  status           Local health report
-  search           Search entries in markdown files
-  doctor           Diagnostic health check
-  recover          Process orphaned session files
-  process-session  Score session data (internal, used by agent hook)
+  log              Log a journal entry with scoring and milestone detection
+  status           Show entry counts, streaks, projects, and pending sessions
+  search <query>   Search journal entries by keyword
+  doctor           Check hooks, config, cache, and session file health
+  recover          Process orphaned session files into journal entries
+
+Internal:
+  process-session  Score session data for the Stop agent hook (not user-facing)
 
 Run 'journey <command> --help' for command-specific options.`);
   process.exit(0);

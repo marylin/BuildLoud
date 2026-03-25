@@ -1,6 +1,6 @@
 ---
 name: journal-review
-description: Browse and curate captured journal entries — review what was captured, clean up low-value entries, pick entries to publish. Use when "review entries", "show journal", "what did I capture", or "clean up entries".
+description: Browse, curate, and clean up captured journal entries by score.
 ---
 
 # /journal-review — Browse & Curate Entries

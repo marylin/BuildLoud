@@ -1,6 +1,6 @@
 ---
 name: journal
-description: Use when logging a build-in-public journal entry — coding wins, blockers, insights, or milestones. Triggers on /journal, "log this", "journal entry", or "capture this moment".
+description: Log a build-in-public journal entry — wins, blockers, insights, milestones.
 ---
 
 # /journal — Build-in-Public Journal Entry

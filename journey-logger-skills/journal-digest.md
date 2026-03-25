@@ -1,6 +1,6 @@
 ---
 name: journal-digest
-description: Generate a weekly summary of journal entries — reviews the week's work and writes a narrative digest. Triggers on /journal-digest, "weekly summary", "digest", "week in review".
+description: Generate a weekly narrative summary of your building activity.
 ---
 
 # /journal-digest — Weekly Digest

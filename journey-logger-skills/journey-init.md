@@ -1,6 +1,6 @@
 ---
 name: journey-init
-description: First-run setup for Journey Logger — configures voice profile, notification preferences, and target platforms. Run automatically when config is missing, or manually to update settings.
+description: Set up your voice, notification preferences, and target platforms for build-in-public journaling.
 ---
 
 # /journey-init — Journey Logger Setup

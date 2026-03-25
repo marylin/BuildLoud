@@ -1,6 +1,6 @@
 ---
 name: journal-publish
-description: Use when preparing journal entries for social media, blog, or newsletter — rewrite entries in your voice for public sharing. Triggers on /journal-publish, "publish this", "make this shareable", "social post".
+description: Rewrite journal entries in your voice for Twitter, LinkedIn, or blog.
 ---
 
 # /journal-publish — Publish-Ready Content
