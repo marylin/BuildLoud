@@ -1,31 +1,17 @@
 #!/usr/bin/env node
-// bin/journey.js — Journey Logger CLI
-import { parseArgs } from 'node:util';
+// bin/journey.js — Journey Logger CLI (v2)
 import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// Load .env from project root
-const { loadEnv } = await import(pathToFileURL(join(__dirname, '..', 'lib', 'env.js')).href);
-loadEnv(join(__dirname, '..', '.env'));
-
-// Startup validation
-const { validateEnv } = await import(pathToFileURL(join(__dirname, '..', 'lib', 'validate.js')).href);
-const envResult = validateEnv();
-for (const w of envResult.warnings) {
-  console.error(`[journey] ${w}`);
-}
-
 const commands = {
   log: '../lib/cli/log.js',
   status: '../lib/cli/status.js',
-  top: '../lib/cli/top.js',
   search: '../lib/cli/search.js',
-  sync: '../lib/cli/sync.js',
-  rehumanize: '../lib/cli/rehumanize.js',
-  digest: '../lib/cli/digest.js',
   doctor: '../lib/cli/doctor.js',
+  recover: '../lib/cli/recover.js',
+  'process-session': '../lib/cli/process-session.js',
 };
 
 const command = process.argv[2];
@@ -34,14 +20,12 @@ if (!command || command === '--help' || command === '-h') {
   console.log(`Usage: journey <command> [options]
 
 Commands:
-  log           Write a manual journal entry
-  status        Pipeline health report
-  top           Query top entries from DB
-  search        Search entries (local + DB)
-  sync          Sync DB ↔ local markdown
-  rehumanize    Retry failed humanizations
-  digest        Generate weekly digest
-  doctor        Diagnostic health check
+  log              Write a manual journal entry
+  status           Local health report
+  search           Search entries in markdown files
+  doctor           Diagnostic health check
+  recover          Process orphaned session files
+  process-session  Score session data (internal, used by agent hook)
 
 Run 'journey <command> --help' for command-specific options.`);
   process.exit(0);
