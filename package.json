@@ -33,9 +33,6 @@
   "bugs": {
     "url": "https://github.com/marylin/journey-logger/issues"
   },
-  "dependencies": {
-    "@neondatabase/serverless": "^1.0.2"
-  },
   "lint-staged": {
     "*.js": "node --check"
   }

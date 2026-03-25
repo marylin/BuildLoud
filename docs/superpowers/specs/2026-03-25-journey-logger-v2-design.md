@@ -39,10 +39,11 @@ CONFIG (set once, edit anytime)
   ~/.claude/journey/config.md   → global defaults
   .claude/journey.md            → per-repo overrides
 
-STORAGE
-  YYYY/MM/YYYY-MM-DD.md         → journal entries (only storage)
+STORAGE (all under ~/.claude/journey/)
+  entries/YYYY/MM/YYYY-MM-DD.md → journal entries (only storage)
   weekly/YYYY-WNN.md            → digests
-  lib/cache.json                → local state (streaks, fingerprints)
+  sessions/{id}.jsonl           → in-flight session data
+  lib/cache.json                → local state (in tool install dir)
 ```
 
 ## Hooks
@@ -60,8 +61,10 @@ STORAGE
 }
 ```
 
-- **Unchanged from v1.** Lightweight bash, appends one JSONL line per commit.
+- **Updated from v1.** Lightweight bash, appends one JSONL line per commit.
+- v1 wrote to a single shared `~/.claude/journey-session.jsonl`. v2 writes to session-scoped files.
 - Writes to `~/.claude/journey-sessions/{session-id}.jsonl`
+- **Session ID source:** Claude Code passes hook input as JSON on stdin. The `session_id` field from that JSON is used. If unavailable, the script generates a date-based fallback ID (`YYYY-MM-DD-{PID}`) to ensure isolation without perfect per-session scoping.
 - Extracts: timestamp, project (cwd basename), commit message, conventional commit type
 - Skips: amends, dry-runs, echo-wrapped commands
 - ~5ms execution, can't fail in a way that affects Claude Code
@@ -99,25 +102,46 @@ STORAGE
 }
 ```
 
-Agent prompt instructs Claude to:
+**Agent prompt (full template):**
 
-1. Read `~/.claude/journey-sessions/{session-id}.jsonl`
-2. Read voice profile from `~/.claude/journey/config.md` (fall back to defaults)
-3. Group commits by project
-4. Identify notable moments:
-   - PR merges
-   - Large commit clusters (5+ commits on one feature)
-   - Breakthrough patterns (failed attempts → success)
-   - New projects (first appearance)
-   - Significant refactors or architecture changes
-5. Score each potential entry (0-10) using `lib/score.js` logic
-6. For entries scoring 5+: write post-ready summary in user's voice
-   - Focus on OUTCOMES and WHY, not technical HOW
-   - Include emotional arc if present (struggle → breakthrough)
-7. For entries scoring < 5: write brief factual record (one line)
-8. Append to `$JL_PATH/YYYY/MM/YYYY-MM-DD.md`
-9. Update local cache (streaks, projects, fingerprints)
-10. Delete processed session file
+```
+You are the journey-logger agent. Your job is to process a coding session's
+commits into a post-ready journal entry.
+
+STEP 1: Read the session file.
+  Run: cat ~/.claude/journey-sessions/{session-id}.jsonl
+  If the file doesn't exist or is empty, stop — nothing to process.
+
+STEP 2: Read the user's voice profile.
+  Run: cat ~/.claude/journey/config.md
+  If it doesn't exist, use a neutral professional tone.
+  If a per-repo override exists at .claude/journey.md in the session's
+  working directory, apply those overrides.
+
+STEP 3: Process the session.
+  Run: node {JL_PATH}/bin/journey.js process-session --file {session-file}
+  This script handles: grouping by project, scoring (lib/score.js),
+  cache updates (lib/cache.js), and returns structured JSON with
+  scored entries. The agent does NOT reimplement scoring logic.
+
+STEP 4: Write entries.
+  For each entry returned by the process script:
+  - If score >= 5: rewrite the commit summary in the user's voice.
+    Focus on OUTCOMES and WHY, not technical details.
+    Include the emotional arc if present (struggle → breakthrough).
+    Write 2-3 sentences max.
+  - If score < 5: use the raw commit summary as-is (one line).
+  Append entries to {JL_PATH}/YYYY/MM/YYYY-MM-DD.md using the
+  standard markdown format.
+
+STEP 5: Clean up.
+  Delete the processed session file.
+```
+
+Note: `{JL_PATH}` and `{session-id}` are injected into the prompt template
+at hook registration time via the hooks.example.json configuration.
+The `process-session` CLI command is new — it encapsulates the scoring
+pipeline so the agent doesn't need to invoke Node modules directly.
 
 **Failure handling:**
 - `async: true` — never blocks session exit
@@ -136,7 +160,7 @@ Each session writes to its own file: `~/.claude/journey-sessions/{session-id}.js
 
 ## Onboarding: `/journey-init`
 
-Triggered automatically the first time any journey skill runs and `~/.claude/journey/config.md` does not exist.
+Triggered automatically the first time any journey skill runs and `~/.claude/journey/config.md` does not exist. Each skill includes a guard instruction: "Before executing, check if `~/.claude/journey/config.md` exists. If not, run `/journey-init` first." This is a single line in each skill's markdown, not duplicated logic. If the user runs `/journey-init` directly when config already exists, it shows current settings and offers to update them.
 
 ### Guided Questionnaire
 
@@ -159,6 +183,14 @@ Step 3: Notifications
   (b) Nudge — tell me when something notable happens
   (c) Batch — collect and show me at end of day/week
   → Saves preference
+
+  Implementation of notification modes:
+  - Silent: default. Entries written to markdown, no interruption.
+  - Nudge: SessionStart hook checks for unreviewed high-scoring entries
+    from previous sessions. If found, Claude mentions them briefly:
+    "You had 2 notable moments yesterday — run /journal-review when ready."
+  - Batch: Same as nudge but only triggers once per day (tracks last
+    notification timestamp in cache).
 
 Step 4: Platforms
   "What platforms do you share on?"
@@ -191,10 +223,22 @@ No corporate speak. No emojis unless ironic.
 - notification: silent
 - platforms: twitter, linkedin
 - score_threshold: 5
-
-## Path
-- journal_path: D:/Repos/build-log
 ```
+
+Default journal path is `~/.claude/journey/` — all data lives here:
+
+```
+~/.claude/journey/
+├── config.md                    # this file
+├── entries/
+│   └── YYYY/MM/YYYY-MM-DD.md   # journal entries
+├── weekly/
+│   └── YYYY-WNN.md             # digests
+└── sessions/
+    └── {session-id}.jsonl       # in-flight session data
+```
+
+No `journal_path` config key needed unless the user wants to override the default. The tool auto-discovers `~/.claude/journey/` on all platforms.
 
 ### Per-repo override: `.claude/journey.md`
 
@@ -306,13 +350,15 @@ No DB query. No API. Claude reads files and writes.
 
 ## CLI
 
-Four commands. All local. All instant. All offline-capable.
+Five commands. All local. All instant. All offline-capable.
 
 ```
-journey status    → entries this week, streaks, backlog size, hook health
-journey search    → grep markdown files for text
-journey doctor    → validate hooks, config, paths, no orphans
-journey recover   → process orphaned session files
+journey log             → write a manual entry (used by /journal skill)
+journey status          → entries this week, streaks, backlog size, hook health
+journey search          → grep markdown files for text
+journey doctor          → validate hooks, config, paths, no orphans
+journey recover         → process orphaned session files
+journey process-session → scoring pipeline for Stop agent hook (internal)
 ```
 
 ### `journey log`
@@ -326,6 +372,24 @@ Pipeline: dedup → score → cache update → markdown write
 No network. No API. Instant.
 ```
 
+### `journey process-session`
+
+Internal command used by the Stop agent hook. Not user-facing.
+
+```
+journey process-session --file PATH
+
+1. Parse JSONL session file
+2. Group commits by project
+3. Score each group (lib/score.js)
+4. Update cache (lib/cache.js)
+5. Output structured JSON for agent to consume:
+   [{project, type, score, milestones, commits, raw_summary}, ...]
+
+Does NOT write markdown — the agent handles that
+(to apply voice profile and humanization).
+```
+
 ## Scoring (Unchanged from v1)
 
 Deterministic, pure computation. No external calls.
@@ -336,6 +400,7 @@ Deterministic, pure computation. No external calls.
 | Type: insight/blocker | +3 |
 | Type: feature | +2 |
 | Type: bugfix/refactor/infra | +1 |
+| Type: exploration/planning | +0 |
 | Source: manual_journal | +3 |
 | Notable/milestone detected | +2 |
 | New project | +2 |
@@ -378,27 +443,34 @@ The scoring system and Stop hook agent prompt should weight these patterns when 
 | `lib/cli/rehumanize.js` | ~80 | `/journal-publish` skill |
 | `lib/cli/digest.js` | ~30 | `/journal-digest` skill |
 | `scripts/generate-digest.js` | ~150 | `/journal-digest` skill |
+| `lib/write-entry.js` | ~90 | Pipeline replaced by `process-session` + agent hook |
 | `scripts/journey-capture.js` | ~145 | Stop agent hook |
+| `scripts/generate-digest.js` | ~150 | `/journal-digest` skill |
+| `scripts/sync-pr-entries.js` | ~80 | No DB to sync PR entries to |
+| `scripts/migrate.js` | ~60 | No DB migrations |
 | `migrations/` | ~50 | No DB |
 | `pending-sync.jsonl` system | — | Nothing to retry |
 | `lib/config.json` | — | No tenant routing |
 | `.env` | — | No keys |
 
-**~1,200 lines deleted.** Replaced by ~200 lines of hook scripts + skill markdown files.
+**~1,400+ lines deleted.** Replaced by ~200 lines of hook scripts + skill markdown files.
 
 ## What Stays from v1
 
-| Component | Why |
-|-----------|-----|
-| `scripts/journey-accumulate.sh` | PostToolUse hook — proven, lightweight |
-| `lib/score.js` | Deterministic scoring — pure computation |
-| `lib/cache.js` | Local state — streaks, fingerprints, milestones |
-| `lib/markdown.js` | Markdown writer — the storage layer |
-| `lib/errors.js` | Error logging — simplified, local only |
-| `bin/journey.js` | CLI entry — reduced to 4 commands |
-| `lib/cli/status.js` | Health report — simplified |
-| `lib/cli/search.js` | Grep markdown — remove --db flag |
-| `lib/cli/doctor.js` | Diagnostics — simplified |
+Components marked "rewrite" keep their purpose but need significant changes to remove deleted dependencies.
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| `scripts/journey-accumulate.sh` | **Rewrite** | Update to write session-scoped files with session ID |
+| `lib/score.js` | **Keep as-is** | Pure computation, no external deps |
+| `lib/cache.js` | **Keep as-is** | Local state, no external deps. Note: file-based lock has TOCTOU risk under concurrent agent hooks — acceptable for journal data, document as known limitation |
+| `lib/markdown.js` | **Keep as-is** | Append-only markdown writer |
+| `lib/errors.js` | **Keep as-is** | Error logging, local only |
+| `bin/journey.js` | **Rewrite** | Remove `env.js` and `validate.js` imports. Register 5 commands: `log`, `status`, `search`, `doctor`, `recover`. Add new `process-session` command for agent hook. |
+| `lib/cli/log.js` | **Rewrite** | Remove `write-entry.js` import. Call `score.js`, `cache.js`, `markdown.js` directly. |
+| `lib/cli/status.js` | **Rewrite** | Remove DB ping and queue stats. Report from cache + markdown + session dir only. |
+| `lib/cli/search.js` | **Simplify** | Remove `--db` flag and Neon query path. Keep local grep. |
+| `lib/cli/doctor.js` | **Rewrite** | Remove DB/API key validation. Check: hooks configured, config.md exists, paths valid, no orphans. |
 
 ## New Files
 
@@ -406,6 +478,7 @@ The scoring system and Stop hook agent prompt should weight these patterns when 
 |------|---------|
 | `scripts/journey-notable.sh` | PostToolUse hook for PR/merge events |
 | `lib/cli/recover.js` | Orphan session file recovery |
+| `lib/cli/process-session.js` | Scoring pipeline for agent hook (replaces write-entry.js) |
 | `journey-logger-skills/journey-init.md` | Onboarding skill |
 | `journey-logger-skills/journal-review.md` | Curation skill |
 | `journey-logger-skills/journal-digest.md` | Digest skill |
@@ -416,33 +489,37 @@ The scoring system and Stop hook agent prompt should weight these patterns when 
 
 ```
 build-log/
-├── bin/journey.js
+├── bin/journey.js              # CLI entry (6 commands: log, status, search,
+│                               #   doctor, recover, process-session)
 ├── lib/
-│   ├── score.js
-│   ├── cache.js
-│   ├── markdown.js
-│   ├── errors.js
+│   ├── score.js                # Deterministic scoring (keep as-is)
+│   ├── cache.js                # Local state (keep as-is)
+│   ├── markdown.js             # Storage layer (keep as-is)
+│   ├── errors.js               # Error logging (keep as-is)
 │   └── cli/
-│       ├── log.js
-│       ├── status.js
-│       ├── search.js
-│       ├── doctor.js
-│       └── recover.js
+│       ├── log.js              # Manual entry (rewrite: remove write-entry dep)
+│       ├── status.js           # Health report (rewrite: remove DB deps)
+│       ├── search.js           # Grep markdown (simplify: remove --db)
+│       ├── doctor.js           # Diagnostics (rewrite: remove DB/API checks)
+│       ├── recover.js          # Orphan recovery (NEW)
+│       └── process-session.js  # Scoring pipeline for agent hook (NEW)
 ├── scripts/
-│   ├── journey-accumulate.sh
-│   └── journey-notable.sh
+│   ├── journey-accumulate.sh   # PostToolUse hook (rewrite: session-scoped files)
+│   └── journey-notable.sh     # PostToolUse hook for PRs/merges (NEW)
 ├── journey-logger-skills/
-│   ├── journal.md
-│   ├── j.md
-│   ├── journal-review.md
-│   ├── journal-publish.md
-│   ├── journal-digest.md
-│   ├── journey-init.md
-│   └── README.md
-├── hooks.example.json
-├── config.example.md
-├── YYYY/MM/YYYY-MM-DD.md
-├── weekly/YYYY-WNN.md
+│   ├── journal.md              # /journal skill (update)
+│   ├── j.md                    # /j alias (keep as-is)
+│   ├── journal-review.md       # Curation skill (NEW)
+│   ├── journal-publish.md      # Publishing skill (rewrite)
+│   ├── journal-digest.md       # Digest skill (NEW)
+│   ├── journey-init.md         # Onboarding skill (NEW)
+│   └── README.md               # Plugin readme (rewrite)
+├── hooks.example.json          # Hook config template (rewrite)
+├── config.example.md           # Voice/preference template (NEW)
+│                               # Journal data lives in ~/.claude/journey/
+│                               #   entries/YYYY/MM/YYYY-MM-DD.md
+│                               #   weekly/YYYY-WNN.md
+│                               #   sessions/{id}.jsonl
 ├── package.json                # ZERO dependencies
 ├── CLAUDE.md
 └── README.md
@@ -455,7 +532,7 @@ build-log/
 3. Run `/journey-init` to set up voice profile and preferences
 4. Update hooks in `~/.claude/settings.json` from `hooks.example.json`
 5. Remove `.env` (no longer needed for core functionality)
-6. Run `npm prune` to remove `@neondatabase/serverless`
+6. Run `npm uninstall @neondatabase/serverless` to remove the only dependency
 
 ## Risk Assessment
 
@@ -468,3 +545,13 @@ build-log/
 | Voice profile missing | Agent falls back to neutral professional tone |
 | Markdown files grow over time | `/journal-review` has bulk-clean for low-value entries |
 | User forgets to review | Configurable notification preference (silent/nudge/batch) |
+| Cache lock contention under concurrent sessions | Existing spinlock allows proceed-without-lock after 3 retries. Acceptable for journal data — worst case is a slightly off entry count, not data loss. Document as known limitation. |
+| Notification modes need a SessionStart hook | Add optional SessionStart prompt hook for nudge/batch modes — reads cache for unreviewed high-scoring entries, mentions them briefly. Only fires if notification != silent. |
+
+## Known Limitations
+
+1. **Cache concurrency:** `lib/cache.js` uses a file-based spinlock. Under concurrent agent hooks (multiple sessions ending simultaneously), two agents could read stale cache data. Worst case: an entry count is off by 1, or a duplicate fingerprint isn't caught. This is acceptable for journal data — no data is lost, just slightly inaccurate stats. A future improvement could use OS-level file locking.
+
+2. **Session ID availability:** The session-scoped file design depends on extracting a session identifier from Claude Code's hook input JSON. If Claude Code doesn't provide a stable `session_id` field, the fallback is a `YYYY-MM-DD-{PID}` pattern, which provides date-level isolation but not perfect per-session scoping. This should be validated during implementation.
+
+3. **Agent hook on Stop timing:** The Stop event fires when Claude finishes responding, not when the process exits. The agent hook spawns a subagent in the background. If Claude Code is terminated forcefully (killed, crash), the Stop hook may not fire. Session files are preserved for `journey recover` in this case.

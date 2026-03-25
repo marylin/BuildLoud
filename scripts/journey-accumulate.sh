@@ -3,7 +3,18 @@
 # Reads tool_input JSON from stdin, extracts the git commit command,
 # and appends a structured JSON line to ~/.claude/journey-session.jsonl.
 
+log_error() {
+  mkdir -p "$HOME/.claude/debug" 2>/dev/null
+  echo "$(date +%Y-%m-%dT%H:%M:%S%z) [journey-accumulate] $1" >> "$HOME/.claude/debug/hook-failures.log"
+}
+
 set -euo pipefail
+
+# Check node is available
+if ! command -v node &>/dev/null; then
+  log_error "node not found — journey accumulation skipped"
+  exit 0
+fi
 
 # Read stdin (Claude Code passes JSON with tool_input.command)
 INPUT=$(cat)
