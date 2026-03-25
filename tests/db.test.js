@@ -16,6 +16,8 @@ afterEach(() => {
   if (existsSync(QUEUE_PATH)) unlinkSync(QUEUE_PATH);
   const TMP_PATH = QUEUE_PATH + '.tmp';
   if (existsSync(TMP_PATH)) unlinkSync(TMP_PATH);
+  const DEAD_PATH = QUEUE_PATH.replace('.jsonl', '.dead.jsonl');
+  if (existsSync(DEAD_PATH)) unlinkSync(DEAD_PATH);
   mock.restoreAll();
 });
 
@@ -130,5 +132,85 @@ describe('atomic queue rewrite (spec 1.3)', () => {
     assert.ok(pending.some(e => e.project === 'existing'));
     assert.ok(pending.some(e => e.project === 'orphan'));
     if (existsSync(TMP_PATH)) unlinkSync(TMP_PATH);
+  });
+});
+
+describe('retry backoff (spec 4.1)', () => {
+  it('enqueue adds _retry_count and _queued_at', () => {
+    db.enqueue({ project: 'test', type: 'feature', source: 'stop_hook', summary: 'x' });
+    const q = db.readQueue();
+    assert.equal(q[0]._retry_count, 0);
+    assert.ok(q[0]._queued_at);
+  });
+
+  it('readQueueReady skips entries in backoff', () => {
+    const future = new Date(Date.now() + 60000).toISOString();
+    writeFileSync(QUEUE_PATH,
+      JSON.stringify({
+        project: 'backoff', type: 'feature', source: 'stop_hook', summary: 'x',
+        _queued_at: new Date().toISOString(), _retry_count: 1, _next_retry_at: future
+      }) + '\n'
+    );
+    const ready = db.readQueueReady();
+    assert.equal(ready.length, 0);
+  });
+
+  it('readQueueReady includes entries past backoff', () => {
+    const past = new Date(Date.now() - 1000).toISOString();
+    writeFileSync(QUEUE_PATH,
+      JSON.stringify({
+        project: 'ready', type: 'feature', source: 'stop_hook', summary: 'x',
+        _queued_at: new Date().toISOString(), _retry_count: 1, _next_retry_at: past
+      }) + '\n'
+    );
+    const ready = db.readQueueReady();
+    assert.equal(ready.length, 1);
+  });
+});
+
+describe('dead-letter (spec 4.2)', () => {
+  it('moves entry to dead-letter after max retries', () => {
+    const DEAD_PATH = QUEUE_PATH.replace('.jsonl', '.dead.jsonl');
+    writeFileSync(QUEUE_PATH,
+      JSON.stringify({
+        project: 'dead', type: 'feature', source: 'stop_hook', summary: 'x',
+        _queued_at: new Date().toISOString(), _retry_count: 10
+      }) + '\n'
+    );
+    db.processDeadLetters();
+    assert.ok(existsSync(DEAD_PATH));
+    const dead = readFileSync(DEAD_PATH, 'utf8').trim().split('\n').map(l => JSON.parse(l));
+    assert.ok(dead.some(e => e.project === 'dead'));
+    assert.equal(dead[0]._dead_reason, 'max_retries');
+    if (existsSync(DEAD_PATH)) unlinkSync(DEAD_PATH);
+  });
+
+  it('keeps entries below max retries in queue', () => {
+    writeFileSync(QUEUE_PATH,
+      JSON.stringify({
+        project: 'alive', type: 'feature', source: 'stop_hook', summary: 'x',
+        _queued_at: new Date().toISOString(), _retry_count: 5
+      }) + '\n'
+    );
+    db.processDeadLetters();
+    const q = db.readQueue();
+    assert.equal(q.length, 1);
+    assert.equal(q[0].project, 'alive');
+  });
+});
+
+describe('queue size cap (spec 4.3)', () => {
+  it('rejects enqueue when at cap', () => {
+    const lines = Array.from({ length: 500 }, (_, i) =>
+      JSON.stringify({ project: `p${i}`, type: 'feature', source: 'stop_hook', summary: 'x', _queued_at: new Date().toISOString() })
+    ).join('\n') + '\n';
+    writeFileSync(QUEUE_PATH, lines);
+    const result = db.enqueue({ project: 'overflow', type: 'feature', source: 'stop_hook', summary: 'x' });
+    assert.equal(result, false);
+  });
+
+  it('allows enqueue when below cap', () => {
+    const result = db.enqueue({ project: 'ok', type: 'feature', source: 'stop_hook', summary: 'x' });
+    assert.equal(result, true);
   });
 });
