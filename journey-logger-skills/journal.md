@@ -5,7 +5,11 @@ description: Use when logging a build-in-public journal entry — coding wins, b
 
 # /journal — Build-in-Public Journal Entry
 
-Capture a moment from your coding session. Writes to local markdown + optional Neon DB.
+## Guard
+Before executing, check if `~/.claude/journey/config.md` exists. If not, run `/journey-init` first.
+
+## Path Resolution
+`$JL_PATH`: `$JOURNEY_LOGGER_PATH` env var, or the parent directory of this skill file.
 
 ## Quick Mode (with arguments)
 
@@ -25,7 +29,6 @@ node $JL_PATH/bin/journey.js log "$SUMMARY" --type TYPE --project PROJECT_NAME -
 ```
 
 Where:
-- `$JL_PATH`: `$JOURNEY_LOGGER_PATH` env var, or the parent directory of this skill file
 - `PROJECT_NAME`: current working directory basename
 - `TYPE`: classified from keywords above
 - `$SUMMARY`: the user's text as-is (shell-escape quotes)
