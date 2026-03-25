@@ -1,9 +1,16 @@
 # Journey Logger
 
+![CI](https://github.com/marylin/journey-logger/actions/workflows/ci.yml/badge.svg)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
 [![Node.js 18+](https://img.shields.io/badge/node-18%2B-green.svg)](https://nodejs.org)
 
 Zero-latency build-in-public journal for [Claude Code](https://claude.ai/claude-code). Auto-captures coding session summaries via hooks, supports manual capture via `/journal`, and optionally feeds high-scoring entries to content pipelines.
+
+## Getting Started
+
+1. Clone and install: `npm install`
+2. Copy `.env.example` to `.env` and fill in values
+3. Run `journey doctor` to verify your setup
 
 ## How It Works
 
@@ -80,6 +87,19 @@ See [`journey-logger-skills/README.md`](journey-logger-skills/README.md) for det
    See `hooks.example.json` for the exact configuration.
 
 5. **n8n Workflows** (optional): See `n8n/README.md` for PR hook and weekly digest automation.
+
+## Environment Variables
+
+| Variable | Required | What it enables |
+|----------|----------|-----------------|
+| `DATABASE_URL` | No | DB sync, search --db, top, digest |
+| `ANTHROPIC_API_KEY` | No | Humanization (public-ready rewrites) |
+| `SEO_ENGINE_PATH` | No | Push high-scoring entries to seo-engine |
+| `RESEND_API_KEY` | No | Email delivery for weekly digests |
+| `DIGEST_EMAIL` | No | Recipient for digest emails |
+| `DIGEST_FROM_EMAIL` | No | Sender address for digest emails |
+
+All features degrade gracefully — the tool works with zero env vars configured.
 
 ## Usage
 
@@ -219,6 +239,13 @@ journey-logger/
 ├── SECURITY.md
 └── README.md
 ```
+
+## Troubleshooting
+
+- Run `journey doctor` for a full diagnostic check
+- Error logs: `~/.claude/journey-errors.log`
+- Queue stuck? Check `journey sync status` and `journey sync push`
+- Cache issues? Delete `lib/cache.json` (auto-recreated)
 
 ## Dependencies
 
