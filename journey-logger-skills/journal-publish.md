@@ -1,47 +1,63 @@
 ---
 name: journal-publish
-description: Use when preparing journal entries for social media, blog, or newsletter — browsing high-scoring entries and generating public-ready versions.
+description: Use when preparing journal entries for social media, blog, or newsletter — rewrite entries in your voice for public sharing. Triggers on /journal-publish, "publish this", "make this shareable", "social post".
 ---
 
-# /journal-publish — Publish-Ready Journal Content
+# /journal-publish — Publish-Ready Content
 
-Browse recent high-scoring entries and generate public-ready versions for social media.
-
-## Path Resolution
-
-`$JL_PATH`: `$JOURNEY_LOGGER_PATH` env var, or the parent directory of this skill file.
+## Guard
+Before executing, check if `~/.claude/journey/config.md` exists. If not, run `/journey-init` first.
 
 ## Steps
 
-1. **List candidates** — run `node $JL_PATH/bin/journey.js rehumanize` to show entries needing humanization.
+1. **Read voice profile** from `~/.claude/journey/config.md`. If a per-repo override exists at `.claude/journey.md`, apply it.
 
-2. **Show ready entries** — read the last 7 days of markdown from `$JL_PATH/YYYY/MM/` and find entries with `> Public:` blockquotes (already humanized). Display:
+2. **Find entries to publish.** Either:
+   - User specifies entry numbers (from `/journal-review`)
+   - Default: read last 7 days from `~/.claude/journey/entries/YYYY/MM/`, show entries scoring 5+, ask which to publish
+
+3. **Rewrite each selected entry** in the user's voice for their target platform(s):
+   - **Twitter:** Hook + one punch line. Under 280 characters. Build-in-public energy.
+   - **LinkedIn:** 3-4 sentences. Insight-driven. Shows the thinking, not just the doing.
+   - **Blog:** Full narrative with context. 2-3 paragraphs.
+
+   Rules for rewriting:
+   - Focus on OUTCOMES and WHY, not technical HOW
+   - Replace jargon with plain language
+   - Include the emotional arc if present (struggle → breakthrough → win)
+   - Match the user's voice from config (tone, sentence length, personality)
+   - Do NOT use phrases listed in "What I never say"
+   - Do NOT invent details beyond what the entry contains
+
+4. **Output copy-paste blocks:**
    ```
-   [ready]  Project (score X) — "public summary preview..."
-   [pending] Project (score X) — "raw summary..."
+   --- twitter ---
+   [text]
+   --- end ---
+
+   --- linkedin ---
+   [text]
+   --- end ---
    ```
 
-3. **Ask user** what to do:
-   - "publish all" — humanize pending entries, show all
-   - Pick by number to refine with a hint
-   - `--force` regenerates all
+5. **Accept conversational tweaks:**
+   - "make it punchier"
+   - "add the AI angle"
+   - "less sarcastic"
+   - "shorter"
+   → Rewrite and show updated version.
 
-4. **Humanize pending entries** — run `node $JL_PATH/bin/journey.js rehumanize --run`
-
-5. **Output copy-paste text** for each entry:
-   ```
-   ---
-   Platform: linkedin | Project: Name | Score: 8
-
-   [the public summary text]
-   ---
-   ```
-
-6. Do NOT post anywhere. Output text only.
+6. **Optionally save** — if user confirms, append a `> **Public:** ...` blockquote under the original entry in the markdown file.
 
 ## Arguments
 
-- No args: last 7 days
+- No args: last 7 days, score 5+
 - `--days N`: last N days
-- `--force`: regenerate all regardless of cache
-- Other text: hint for humanization ("angle toward developers")
+- Other text: tone/angle hint ("angle toward developers", "more casual")
+
+## Rules
+
+- Do NOT post anywhere. Output text only.
+- Do NOT use any external API. You ARE the writer.
+- One rewrite per entry unless user asks for variations.
+- The output should be 80-90% ready to post — user just reviews and hits send.
