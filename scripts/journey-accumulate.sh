@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# journey-accumulate.sh — PostToolUse hook that logs git commits to a JSONL session file.
+# journey-accumulate.sh — PostToolUse hook that logs git commits to a session-scoped JSONL file.
 # Reads tool_input JSON from stdin, extracts the git commit command,
-# and appends a structured JSON line to ~/.claude/journey-session.jsonl.
+# and appends a structured JSON line to ~/.claude/journey-sessions/{session-id}.jsonl.
 
 log_error() {
   mkdir -p "$HOME/.claude/debug" 2>/dev/null
@@ -16,8 +16,27 @@ if ! command -v node &>/dev/null; then
   exit 0
 fi
 
-# Read stdin (Claude Code passes JSON with tool_input.command)
+# Read stdin (Claude Code passes JSON with tool_input.command and session_id)
 INPUT=$(cat)
+
+# Extract session_id; fall back to YYYY-MM-DD-PID
+SESSION_ID=$(node -e "
+  try {
+    const d = JSON.parse(process.argv[1]);
+    const sid = d.session_id ?? '';
+    console.log(sid.trim() || '');
+  } catch { console.log(''); }
+" "$INPUT")
+
+if [ -z "$SESSION_ID" ]; then
+  SESSION_ID="$(date +%Y-%m-%d)-$$"
+fi
+
+# Ensure sessions directory exists
+SESSIONS_DIR="$HOME/.claude/journey-sessions"
+mkdir -p "$SESSIONS_DIR" 2>/dev/null
+
+SESSION_FILE="$SESSIONS_DIR/${SESSION_ID}.jsonl"
 
 # Extract the command string from tool_input.command using node
 COMMAND=$(node -e "
@@ -77,6 +96,6 @@ node -e "
     type: (process.argv[3].match(/^(\w+)[\(:]/) || [])[1] || 'unknown'
   };
   console.log(JSON.stringify(line));
-" "$TIMESTAMP" "$PROJECT" "$COMMIT_MSG" >> ~/.claude/journey-session.jsonl
+" "$TIMESTAMP" "$PROJECT" "$COMMIT_MSG" >> "$SESSION_FILE"
 
 exit 0
