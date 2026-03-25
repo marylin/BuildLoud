@@ -3,8 +3,10 @@ import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdirSync, rmSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { homedir } from 'node:os';
 
 const TEST_DIR = join(import.meta.dirname, 'test-journal');
+const EXPECTED_DEFAULT = join(homedir(), '.claude', 'journey', 'entries');
 
 let md;
 beforeEach(async () => {
@@ -15,6 +17,7 @@ beforeEach(async () => {
 });
 afterEach(() => {
   if (existsSync(TEST_DIR)) rmSync(TEST_DIR, { recursive: true });
+  md.setBasePath(null); // reset to default after each test
 });
 
 describe('markdown writer', () => {
@@ -72,5 +75,22 @@ describe('markdown writer', () => {
     const path = join(TEST_DIR, '2026', '03', '2026-03-20.md');
     const content = readFileSync(path, 'utf8');
     assert.ok(!content.includes('[manual]'));
+  });
+
+  it('getBasePath returns the current base path', () => {
+    assert.equal(md.getBasePath(), TEST_DIR);
+  });
+
+  it('setBasePath(null) resets to ~/.claude/journey/entries', () => {
+    md.setBasePath(null);
+    assert.equal(md.getBasePath(), EXPECTED_DEFAULT);
+    // restore for afterEach cleanup (no-op since afterEach also resets)
+    md.setBasePath(TEST_DIR);
+  });
+
+  it('default base path resolves to ~/.claude/journey/entries', () => {
+    md.setBasePath(null);
+    assert.equal(md.getBasePath(), EXPECTED_DEFAULT);
+    md.setBasePath(TEST_DIR);
   });
 });

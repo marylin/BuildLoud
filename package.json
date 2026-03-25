@@ -35,5 +35,8 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2"
+  },
+  "lint-staged": {
+    "*.js": "node --check"
   }
 }
