@@ -10,6 +10,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const { loadEnv } = await import(pathToFileURL(join(__dirname, '..', 'lib', 'env.js')).href);
 loadEnv(join(__dirname, '..', '.env'));
 
+// Startup validation
+const { validateEnv } = await import(pathToFileURL(join(__dirname, '..', 'lib', 'validate.js')).href);
+const envResult = validateEnv();
+for (const w of envResult.warnings) {
+  console.error(`[journey] ${w}`);
+}
+
 const commands = {
   status: '../lib/cli/status.js',
   top: '../lib/cli/top.js',
