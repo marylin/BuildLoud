@@ -59,7 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.3.0] - 2026-03-22
 
 ### Added
-- `journey-logger-skills/` -- Claude Code skill pack for plugin distribution (`/plugin add github:marylin/journey-logger/journey-logger-skills`)
+- `buildloud-skills/` -- Claude Code skill pack for plugin distribution (`/plugin add github:marylin/buildloud/buildloud-skills`)
 - `/journal` skill -- manual journal entry capture (quick mode and guided mode)
 - `/j` skill -- shortcut alias for `/journal`
 - `/journal-publish` skill -- browse and publish high-scoring entries
@@ -97,7 +97,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Cross-platform `.env.example` with documented optional vars
 
 ### Changed
-- Package renamed from `build-log` to `journey-logger`
+- Package renamed from `build-log` to `buildloud`
 - Config key `whateverai_projects` → `branded_projects`
 - `SEO_ENGINE_PATH` no longer has fallback (disabled when unset)
 - `DIGEST_FROM_EMAIL` env var replaces hardcoded email address

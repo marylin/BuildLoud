@@ -1,5 +1,5 @@
 {
-  "name": "Journey Logger: Weekly Digest",
+  "name": "BuildLoud: Weekly Digest",
   "nodes": [
     {
       "parameters": {
@@ -109,7 +109,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"from\": \"Journey Logger <journal@whateverai.com>\",\n  \"to\": [\"PASTE_YOUR_EMAIL_HERE\"],\n  \"subject\": \"Weekly Build Log: {{ $json.week }}\",\n  \"html\": \"<h1>Weekly Digest: {{ $json.week }}</h1><p>{{ $json.count }} entries this week</p><pre style='font-family: monospace; white-space: pre-wrap;'>{{ $json.digestContent.replace(/\"/g, '\\\\\"') }}</pre>\"\n}",
+        "jsonBody": "={\n  \"from\": \"BuildLoud <journal@whateverai.com>\",\n  \"to\": [\"PASTE_YOUR_EMAIL_HERE\"],\n  \"subject\": \"Weekly Build Log: {{ $json.week }}\",\n  \"html\": \"<h1>Weekly Digest: {{ $json.week }}</h1><p>{{ $json.count }} entries this week</p><pre style='font-family: monospace; white-space: pre-wrap;'>{{ $json.digestContent.replace(/\"/g, '\\\\\"') }}</pre>\"\n}",
         "options": {}
       },
       "id": "send-email",
@@ -163,5 +163,5 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "tags": [{ "name": "journey-logger" }]
+  "tags": [{ "name": "buildloud" }]
 }

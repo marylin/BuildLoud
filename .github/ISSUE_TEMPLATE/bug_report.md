@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Report a bug in Journey Logger
+about: Report a bug in BuildLoud
 labels: bug
 ---
 
@@ -26,5 +26,5 @@ labels: bug
 
 - OS:
 - Node.js version:
-- Journey Logger version:
+- BuildLoud version:
 - Shell: (bash / zsh / Git Bash / etc.)

@@ -1,7 +1,7 @@
 {
-  "name": "journey-logger",
+  "name": "buildloud",
   "version": "2.0.0",
-  "description": "You build. Journey Logger documents it. A Claude Code plugin that auto-captures coding sessions into a build-in-public journal. Zero dependencies, zero API keys.",
+  "description": "You build. BuildLoud documents it. A Claude Code plugin that auto-captures coding sessions into a build-in-public journal. Zero dependencies, zero API keys.",
   "type": "module",
   "engines": {
     "node": ">=18.0.0"
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/marylin/journey-logger.git"
+    "url": "https://github.com/marylin/buildloud.git"
   },
   "author": "Marylin Ritchie <marylin@whateverai.com>",
   "license": "AGPL-3.0-only",
@@ -27,9 +27,9 @@
     "content-automation",
     "ai-agents"
   ],
-  "homepage": "https://github.com/marylin/journey-logger",
+  "homepage": "https://github.com/marylin/buildloud",
   "bugs": {
-    "url": "https://github.com/marylin/journey-logger/issues"
+    "url": "https://github.com/marylin/buildloud/issues"
   },
   "lint-staged": {
     "*.js": "node --check"

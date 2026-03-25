@@ -41,10 +41,10 @@ describe('journey status', () => {
     await assert.doesNotReject(() => run(), 'run() should not throw on empty cache');
   });
 
-  it('outputs the Journey Logger Status header', async () => {
+  it('outputs the BuildLoud Status header', async () => {
     const output = await captureRun(run);
     const combined = output.join('\n');
-    assert.ok(combined.includes('Journey Logger Status'), 'output should include status header');
+    assert.ok(combined.includes('BuildLoud Status'), 'output should include status header');
   });
 
   it('shows entry count from cache', async () => {

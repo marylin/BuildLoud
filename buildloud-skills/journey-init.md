@@ -3,7 +3,7 @@ name: journey-init
 description: Set up your voice, notification preferences, and target platforms for build-in-public journaling.
 ---
 
-# /journey-init — Journey Logger Setup
+# /journey-init — BuildLoud Setup
 
 ## Guard
 Check if `~/.claude/journey/config.md` exists.
@@ -15,7 +15,7 @@ Check if `~/.claude/journey/config.md` exists.
 Ask ONE question at a time. Wait for each answer before asking the next.
 
 ### Step 1: Scope
-"Where should Journey Logger capture entries?"
+"Where should BuildLoud capture entries?"
   (a) Global — all repos (writes to ~/.claude/journey/config.md)
   (b) This repo only (writes to .claude/journey.md)
   (c) Both — global defaults + repo-specific overrides
@@ -44,7 +44,7 @@ From their response, extract:
 Create `~/.claude/journey/config.md` (or `.claude/journey.md` for repo-only):
 
 ```
-# Journey Logger Configuration
+# BuildLoud Configuration
 
 ## Voice
 [extracted tone description]
@@ -68,7 +68,7 @@ mkdir -p ~/.claude/journey/entries ~/.claude/journey/weekly ~/.claude/journey-se
 
 Note: sessions dir is `~/.claude/journey-sessions/` (sibling to `journey/`, not inside it) to keep in-flight data separate from journal content.
 
-Print: "Setup complete. Journey Logger will capture your coding sessions automatically."
+Print: "Setup complete. BuildLoud will capture your coding sessions automatically."
 
 ## Rules
 - Do NOT ask for confirmation on writing the config. Just write it.

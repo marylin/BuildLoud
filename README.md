@@ -1,11 +1,11 @@
-# Journey Logger
+# BuildLoud
 
-![CI](https://github.com/marylin/journey-logger/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/marylin/buildloud/actions/workflows/ci.yml/badge.svg)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
 [![Node.js 18+](https://img.shields.io/badge/node-18%2B-green.svg)](https://nodejs.org)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](package.json)
 
-**You build. Journey Logger documents it.**
+**You build. BuildLoud documents it.**
 
 A Claude Code plugin that automatically captures your coding sessions into a build-in-public journal. Every commit, every PR, every breakthrough — scored, timestamped, and written in your voice. No API keys. No database. No configuration beyond "clone and go."
 
@@ -20,13 +20,13 @@ You code normally
 
 You ship features at 2am. You crack a bug after three hours. You accidentally build something bigger than planned. These are the moments that make great build-in-public content — and you forget all of them by morning.
 
-Journey Logger watches your Claude Code sessions and captures these moments automatically. When you're ready to share, your entries are already 80-90% post-ready in your voice.
+BuildLoud watches your Claude Code sessions and captures these moments automatically. When you're ready to share, your entries are already 80-90% post-ready in your voice.
 
 ## Install
 
 ```bash
-git clone https://github.com/marylin/journey-logger.git
-cd journey-logger
+git clone https://github.com/marylin/buildloud.git
+cd buildloud
 ```
 
 That's it. No `npm install`. Zero dependencies.
@@ -34,14 +34,14 @@ That's it. No `npm install`. Zero dependencies.
 ### Add the Claude Code plugin
 
 ```bash
-/plugin add github:marylin/journey-logger/journey-logger-skills
+/plugin add github:marylin/buildloud/buildloud-skills
 ```
 
 Then run `/journey-init` to set up your voice profile.
 
 ### Add hooks for automatic capture
 
-Merge the entries from [`hooks.example.json`](hooks.example.json) into `~/.claude/settings.json`. Replace `$JOURNEY_LOGGER_PATH` with your clone path.
+Merge the entries from [`hooks.example.json`](hooks.example.json) into `~/.claude/settings.json`. Replace `$BUILDLOUD_PATH` with your clone path.
 
 ## How It Works
 
@@ -130,7 +130,7 @@ journey recover                              # Process orphaned session files
 ## File Structure
 
 ```
-journey-logger/
+buildloud/
 ├── bin/journey.js              # CLI (6 commands)
 ├── lib/
 │   ├── score.js                # Deterministic scoring + milestones
@@ -141,7 +141,7 @@ journey-logger/
 ├── scripts/
 │   ├── journey-accumulate.sh   # Hook: capture git commits
 │   └── journey-notable.sh     # Hook: capture PRs and merges
-├── journey-logger-skills/      # Claude Code plugin (6 skills)
+├── buildloud-skills/           # Claude Code plugin (6 skills)
 ├── tests/                      # 102 tests, 17 suites
 ├── hooks.example.json          # Hook configuration template
 ├── config.example.md           # Voice profile template

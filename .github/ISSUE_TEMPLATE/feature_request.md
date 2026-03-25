@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest an idea for Journey Logger
+about: Suggest an idea for BuildLoud
 labels: enhancement
 ---
 

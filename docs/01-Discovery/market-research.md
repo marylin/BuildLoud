@@ -1,4 +1,4 @@
-# Journey Logger -- Competitive Market Research
+# BuildLoud -- Competitive Market Research
 
 **Date:** 2026-03-25
 
@@ -11,7 +11,7 @@
 #### CommitStream
 - **URL:** https://commit-stream.vercel.app/ (appears defunct -- redirects to unrelated app)
 - **What it does:** AI-converts git commits into social posts for Twitter/X and LinkedIn. Filters noise (typo fixes, readme updates), selects 3-5 impactful commits per week, generates hashtags and visuals.
-- **Comparison:** Closest to journey-logger's humanizer feature. However, it is web-only (no CLI), no journaling layer, no scoring system, no session capture, no SEO pipeline. Single-purpose: commits -> posts.
+- **Comparison:** Closest to BuildLoud's humanizer feature. However, it is web-only (no CLI), no journaling layer, no scoring system, no session capture, no SEO pipeline. Single-purpose: commits -> posts.
 - **Open source:** Unknown (site is down)
 - **Pricing:** Unknown (site is down)
 - **Status:** Likely abandoned
@@ -59,7 +59,7 @@
 #### WakaTime
 - **URL:** https://wakatime.com/
 - **What it does:** Automatic coding time tracking via IDE plugins (600+ languages). Dashboards show time by project, language, branch, file. Weekly email reports. Team leaderboards.
-- **Comparison:** Tracks time, not content. No journaling, no social output, no AI humanization. Complementary -- could be an input source for journey-logger, not a replacement.
+- **Comparison:** Tracks time, not content. No journaling, no social output, no AI humanization. Complementary -- could be an input source for BuildLoud, not a replacement.
 - **Open source:** Plugins are open source, backend is proprietary
 - **Pricing:** Free (2 weeks history) | Basic $6/mo | Premium $12/mo | Team $18/dev/mo | Business $49/seat/mo
 
@@ -86,7 +86,7 @@
 - **URL:** https://github.com/semantic-release/semantic-release
 - **Stars:** 23.5k
 - **What it does:** Fully automated version management + package publishing. Determines next semver, generates changelog, publishes release.
-- **Comparison:** Release automation, not content creation. Complementary -- journey-logger operates at a different layer.
+- **Comparison:** Release automation, not content creation. Complementary -- BuildLoud operates at a different layer.
 - **Open source:** Yes
 - **Pricing:** Free
 
@@ -123,7 +123,7 @@
 #### devlog-cli
 - **URL:** https://github.com/Garinmckayl/devlog-cli
 - **What it does:** CLI tool that parses git history and uses GitHub Copilot CLI to generate narratives. Commands: `today`, `standup`, `week`, `release`, `recap`. Supports markdown and JSON export. Copilot CLI reads actual source code, not just commit messages.
-- **Comparison:** Closest to journey-logger's capture layer. But: no scoring, no social-worthiness filtering, no humanization for public content, no SEO pipeline, no database persistence, no digest system, no Claude Code integration. Requires GitHub Copilot CLI.
+- **Comparison:** Closest to BuildLoud's capture layer. But: no scoring, no social-worthiness filtering, no humanization for public content, no SEO pipeline, no database persistence, no digest system, no Claude Code integration. Requires GitHub Copilot CLI.
 - **Open source:** Yes (MIT)
 - **Pricing:** Free (requires GitHub Copilot subscription)
 
@@ -141,7 +141,7 @@
 #### Typefully
 - **URL:** https://typefully.com/
 - **What it does:** Write, schedule, publish social content across X, LinkedIn, Threads, Bluesky, Mastodon. Has API for programmatic posting. AI writing assistance. Thread creation.
-- **Comparison:** Pure content distribution tool. No git integration, no developer workflow. Could be a downstream integration target for journey-logger's output.
+- **Comparison:** Pure content distribution tool. No git integration, no developer workflow. Could be a downstream integration target for BuildLoud's output.
 - **Open source:** No
 - **Pricing:** Freemium SaaS
 
@@ -178,15 +178,15 @@ Evidence of friction:
 - Content creation from commits is a "nice to have" not a "must have" for most developers
 
 ### Bottom line
-The need exists, but it is a niche within a niche (developers who build in public AND want automation). The market rewards tools that reduce friction to near-zero -- which is exactly where journey-logger's auto-capture hook model excels.
+The need exists, but it is a niche within a niche (developers who build in public AND want automation). The market rewards tools that reduce friction to near-zero -- which is exactly where BuildLoud's auto-capture hook model excels.
 
 ---
 
-## 3. Journey Logger's Unique Value
+## 3. BuildLoud's Unique Value
 
 ### What No Other Tool Does
 
-| Capability | journey-logger | Commit To X | Forg.to | devlog-cli | WakaTime |
+| Capability | BuildLoud | Commit To X | Forg.to | devlog-cli | WakaTime |
 |---|---|---|---|---|---|
 | Auto-captures coding sessions (zero manual input) | Yes (hooks) | No | No | No | Partial (time only) |
 | Social-worthiness scoring (0-10) | Yes | Basic filtering | No | No | No |
@@ -202,13 +202,13 @@ The need exists, but it is a niche within a niche (developers who build in publi
 
 ### The Differentiators
 
-1. **Zero-friction capture**: No other tool auto-captures session summaries via Claude Code hooks. Every competitor requires manual input or active repo monitoring via GitHub webhooks. Journey-logger captures at the point of work, not after.
+1. **Zero-friction capture**: No other tool auto-captures session summaries via Claude Code hooks. Every competitor requires manual input or active repo monitoring via GitHub webhooks. BuildLoud captures at the point of work, not after.
 
 2. **Intelligence layer**: The scoring + milestone detection system is unique. No competitor evaluates whether a piece of work is "worth sharing." They either share everything or nothing.
 
 3. **Full pipeline**: Capture -> Score -> Humanize -> Store -> Digest -> SEO feed. No competitor covers this full chain. Most do one step (commits -> posts).
 
-4. **Claude Code native**: The skill pack model means journey-logger lives inside the developer's existing AI workflow. No context switching to a web app.
+4. **Claude Code native**: The skill pack model means BuildLoud lives inside the developer's existing AI workflow. No context switching to a web app.
 
 5. **Self-hosted / ownable data**: All data stays local (markdown files) or in your own Neon DB. No SaaS lock-in.
 
@@ -251,13 +251,13 @@ The need exists, but it is a niche within a niche (developers who build in publi
 
 ### Weak moats
 1. **Open source (AGPL)**: The code is visible. A well-funded competitor could study the architecture. AGPL helps -- commercial use requires open-sourcing, but a determined SaaS could rewrite from the design.
-2. **No network effect**: Journey-logger is a single-player tool. There is no community, no social graph, no collaborative feature that creates lock-in through other users. Forg.to has this; journey-logger does not.
+2. **No network effect**: BuildLoud is a single-player tool. There is no community, no social graph, no collaborative feature that creates lock-in through other users. Forg.to has this; BuildLoud does not.
 3. **AI commoditization**: The humanization layer depends on Claude Haiku, which any tool can call. The prompt engineering and scoring logic are differentiators, but the underlying capability is available to all.
 
 ### Moat reinforcement opportunities
 - **Integrations**: Connect to Typefully, Buffer, or LinkedIn API for one-click publishing (competitors lack this)
 - **Analytics**: Show "your content performance" over time -- which entries performed well when published, feeding back into scoring
-- **Community layer**: Optional public feed of build-in-public posts from journey-logger users (opt-in), creating network effects
+- **Community layer**: Optional public feed of build-in-public posts from BuildLoud users (opt-in), creating network effects
 - **Template marketplace**: Let users share/sell humanization prompts and scoring configs
 
 ---
@@ -266,7 +266,7 @@ The need exists, but it is a niche within a niche (developers who build in publi
 
 1. **The space is fragmented and immature.** Most competitors are abandoned side projects or minimal landing pages. No dominant player has emerged.
 
-2. **Journey-logger is the most complete solution.** No other tool covers the full capture-to-publish pipeline with intelligence (scoring) built in.
+2. **BuildLoud is the most complete solution.** No other tool covers the full capture-to-publish pipeline with intelligence (scoring) built in.
 
 3. **The Claude Code integration is a genuine differentiator.** Zero competitors integrate as a Claude Code skill pack. This is the sharpest positioning angle.
 
@@ -274,7 +274,7 @@ The need exists, but it is a niche within a niche (developers who build in publi
 
 5. **The biggest risk is market size, not competition.** The audience (developers who build in public, use Claude Code, and want automation) is passionate but small. Growth depends on the Claude Code ecosystem expanding and the build-in-public movement continuing to grow.
 
-6. **Forg.to is the most strategic competitor to watch.** They have community/network effects that journey-logger lacks. However, they are a web platform while journey-logger is a CLI tool -- different modalities for different users.
+6. **Forg.to is the most strategic competitor to watch.** They have community/network effects that BuildLoud lacks. However, they are a web platform while BuildLoud is a CLI tool -- different modalities for different users.
 
 ---
 

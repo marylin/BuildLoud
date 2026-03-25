@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash $JOURNEY_LOGGER_PATH/scripts/journey-accumulate.sh",
+            "command": "bash $BUILDLOUD_PATH/scripts/journey-accumulate.sh",
             "timeout": 5000
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash $JOURNEY_LOGGER_PATH/scripts/journey-notable.sh",
+            "command": "bash $BUILDLOUD_PATH/scripts/journey-notable.sh",
             "timeout": 5000
           }
         ]
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash $JOURNEY_LOGGER_PATH/scripts/journey-notable.sh",
+            "command": "bash $BUILDLOUD_PATH/scripts/journey-notable.sh",
             "timeout": 5000
           }
         ]
@@ -48,7 +48,7 @@
         "hooks": [
           {
             "type": "agent",
-            "prompt": "You are the journey-logger agent. Process the coding session into journal entries.\n\nSTEP 1: Check for session files.\nRun: ls ~/.claude/journey-sessions/\nIf no .jsonl files exist, stop — nothing to process.\n\nSTEP 2: Read the user's voice profile.\nRun: cat ~/.claude/journey/config.md\nIf it doesn't exist, use a neutral professional tone.\nAlso check for .claude/journey.md in the current working directory for overrides.\n\nSTEP 3: For each .jsonl file in ~/.claude/journey-sessions/:\nRun: node $JOURNEY_LOGGER_PATH/bin/journey.js process-session --file <path>\nThis returns JSON with scored entries.\n\nSTEP 4: For each entry in the results:\n- If score >= 5: rewrite the raw_summary in the user's voice. Focus on OUTCOMES and WHY, not technical details. Include emotional arc if present. 2-3 sentences max.\n- If score < 5: use the raw_summary as-is.\nAppend entries to ~/.claude/journey/entries/YYYY/MM/YYYY-MM-DD.md using this format:\n\n## HH:MM — project [type] [source] ⭐(if score>=5)\nsummary text\n\nSTEP 5: Delete processed .jsonl files.\n\nIMPORTANT: If anything fails, leave the session files intact for recovery via 'journey recover'.",
+            "prompt": "You are the BuildLoud agent. Process the coding session into journal entries.\n\nSTEP 1: Check for session files.\nRun: ls ~/.claude/journey-sessions/\nIf no .jsonl files exist, stop — nothing to process.\n\nSTEP 2: Read the user's voice profile.\nRun: cat ~/.claude/journey/config.md\nIf it doesn't exist, use a neutral professional tone.\nAlso check for .claude/journey.md in the current working directory for overrides.\n\nSTEP 3: For each .jsonl file in ~/.claude/journey-sessions/:\nRun: node $BUILDLOUD_PATH/bin/journey.js process-session --file <path>\nThis returns JSON with scored entries.\n\nSTEP 4: For each entry in the results:\n- If score >= 5: rewrite the raw_summary in the user's voice. Focus on OUTCOMES and WHY, not technical details. Include emotional arc if present. 2-3 sentences max.\n- If score < 5: use the raw_summary as-is.\nAppend entries to ~/.claude/journey/entries/YYYY/MM/YYYY-MM-DD.md using this format:\n\n## HH:MM — project [type] [source] ⭐(if score>=5)\nsummary text\n\nSTEP 5: Delete processed .jsonl files.\n\nIMPORTANT: If anything fails, leave the session files intact for recovery via 'journey recover'.",
             "timeout": 30000,
             "async": true
           }

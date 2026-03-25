@@ -9,7 +9,7 @@ description: Log a build-in-public journal entry — wins, blockers, insights, m
 Before executing, check if `~/.claude/journey/config.md` exists. If not, run `/journey-init` first.
 
 ## Path Resolution
-`$JL_PATH`: `$JOURNEY_LOGGER_PATH` env var, or the parent directory of this skill file.
+`$JL_PATH`: `$BUILDLOUD_PATH` env var, or the parent directory of this skill file.
 
 ## Quick Mode (with arguments)
 

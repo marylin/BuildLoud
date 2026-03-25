@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// bin/journey.js — Journey Logger CLI (v2)
+// bin/journey.js — BuildLoud CLI (v2)
 import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 

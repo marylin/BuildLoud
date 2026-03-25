@@ -39,10 +39,10 @@ describe('journey doctor', () => {
     await assert.doesNotReject(() => run(), 'run() should not throw');
   });
 
-  it('outputs the Journey Logger Doctor header', async () => {
+  it('outputs the BuildLoud Doctor header', async () => {
     const output = await captureRun(run);
     const combined = output.join('\n');
-    assert.ok(combined.includes('Journey Logger Doctor'), 'output should include doctor header');
+    assert.ok(combined.includes('BuildLoud Doctor'), 'output should include doctor header');
   });
 
   it('reports config.md not found as a warning when config is absent', async () => {

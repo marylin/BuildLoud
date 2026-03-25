@@ -1,5 +1,5 @@
 {
-  "name": "Journey Logger: PR Hook",
+  "name": "BuildLoud: PR Hook",
   "nodes": [
     {
       "parameters": {
@@ -125,5 +125,5 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "tags": [{ "name": "journey-logger" }]
+  "tags": [{ "name": "buildloud" }]
 }

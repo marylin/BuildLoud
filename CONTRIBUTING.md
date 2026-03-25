@@ -1,4 +1,4 @@
-# Contributing to Journey Logger
+# Contributing to BuildLoud
 
 ## Prerequisites
 
@@ -39,7 +39,7 @@ npm test
 
 ## Writing Skills
 
-Skills are markdown files in `journey-logger-skills/`. Each has YAML frontmatter:
+Skills are markdown files in `buildloud-skills/`. Each has YAML frontmatter:
 
 ```yaml
 ---

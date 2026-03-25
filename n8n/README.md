@@ -1,4 +1,4 @@
-# n8n Workflows for Journey Logger
+# n8n Workflows for BuildLoud
 
 These workflows should be **built in the n8n UI** and exported here for version control.
 The JSON files in this directory are reference exports — import them into n8n to get started,

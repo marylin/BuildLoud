@@ -2,18 +2,18 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in Journey Logger, please report it responsibly:
+If you discover a security vulnerability in BuildLoud, please report it responsibly:
 
 1. **Do NOT open a public issue**
-2. Use [GitHub Security Advisories](https://github.com/marylin/journey-logger/security/advisories/new) (preferred)
+2. Use [GitHub Security Advisories](https://github.com/marylin/buildloud/security/advisories/new) (preferred)
 3. Or email: marylin@whateverai.com
 
 ## Scope
 
-This policy covers the Journey Logger codebase:
+This policy covers the BuildLoud codebase:
 - `lib/` modules (scoring, caching, markdown writer, error logging)
 - `scripts/` (hook scripts for commit and PR capture)
-- `journey-logger-skills/` (Claude Code skill definitions)
+- `buildloud-skills/` (Claude Code skill definitions)
 
 Out of scope (report to their respective maintainers):
 - Claude Code itself

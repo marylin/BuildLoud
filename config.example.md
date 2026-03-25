@@ -1,4 +1,4 @@
-# Journey Logger Configuration
+# BuildLoud Configuration
 
 ## Voice
 <!-- Describe your writing style. How do you talk when sharing what you build? -->

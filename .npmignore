@@ -11,6 +11,6 @@ pending-sync.jsonl.tmp
 lib/config.json
 cache.json*
 hooks.example.json
-journey-logger-skills/
+buildloud-skills/
 *.lock
 *.bak

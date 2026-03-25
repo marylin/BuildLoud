@@ -1,4 +1,4 @@
-// tests/integration-v2.test.js — end-to-end integration test for journey-logger v2
+// tests/integration-v2.test.js — end-to-end integration test for buildloud v2
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -54,7 +54,7 @@ const SESSION_LINES = [
 ];
 
 // ── tests ────────────────────────────────────────────────────────────────────
-describe('journey-logger v2 integration', () => {
+describe('buildloud v2 integration', () => {
 
   it('processSession returns scored entries for simulated accumulate output', () => {
     const sessionFile = writeSessionFile('session-1.jsonl', SESSION_LINES);

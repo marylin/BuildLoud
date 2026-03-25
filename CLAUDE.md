@@ -1,4 +1,4 @@
-# Journey Logger v2
+# BuildLoud v2
 
 Zero-dependency build-in-public journal for Claude Code. No API keys, no database, no npm packages.
 
