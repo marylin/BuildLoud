@@ -24,6 +24,7 @@ const commands = {
   sync: '../lib/cli/sync.js',
   rehumanize: '../lib/cli/rehumanize.js',
   digest: '../lib/cli/digest.js',
+  doctor: '../lib/cli/doctor.js',
 };
 
 const command = process.argv[2];
@@ -38,6 +39,7 @@ Commands:
   sync          Sync DB ↔ local markdown
   rehumanize    Retry failed humanizations
   digest        Generate weekly digest
+  doctor        Diagnostic health check
 
 Run 'journey <command> --help' for command-specific options.`);
   process.exit(0);
