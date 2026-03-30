@@ -1,0 +1,14 @@
+2026/
+weekly/
+tests/
+docs/
+.github/
+.env*
+pending-sync.jsonl
+pending-sync.dead.jsonl
+pending-sync.jsonl.tmp
+lib/config.json
+cache.json*
+hooks.example.json
+*.lock
+*.bak

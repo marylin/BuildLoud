@@ -1,0 +1,37 @@
+{
+  "name": "buildloud",
+  "version": "1.0.1",
+  "description": "You build. BuildLoud documents it. A Claude Code plugin that auto-captures coding sessions into a build-in-public journal. Zero dependencies, zero API keys.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "bin": {
+    "journey": "./bin/journey.js"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "prepublishOnly": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marylin/buildloud.git"
+  },
+  "author": "Marylin Alarcon (https://github.com/marylin)",
+  "license": "AGPL-3.0-only",
+  "keywords": [
+    "build-in-public",
+    "journal",
+    "claude-code",
+    "developer-tools",
+    "content-automation",
+    "ai-agents"
+  ],
+  "homepage": "https://github.com/marylin/buildloud",
+  "bugs": {
+    "url": "https://github.com/marylin/buildloud/issues"
+  },
+  "lint-staged": {
+    "*.js": "node --check"
+  }
+}

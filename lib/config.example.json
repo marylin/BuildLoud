@@ -1,0 +1,6 @@
+{
+  "branded_projects": ["MyProduct", "my-saas", "my-tool"],
+  "default_tenant": "personal-brand",
+  "seo_score_threshold": 7,
+  "digest_score_threshold": 5
+}

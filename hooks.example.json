@@ -1,0 +1,51 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash(git commit*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PLUGIN_ROOT/scripts/journey-accumulate.sh\"",
+            "timeout": 3000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(gh pr *)|Bash(git merge*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PLUGIN_ROOT/scripts/journey-notable.sh\"",
+            "timeout": 3000
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PLUGIN_ROOT/scripts/journey-stop.sh\"",
+            "timeout": 10000,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PLUGIN_ROOT/scripts/journey-sessionstart.sh\"",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
+}
