@@ -6,7 +6,7 @@ If you discover a security vulnerability in BuildLoud, please report it responsi
 
 1. **Do NOT open a public issue**
 2. Use [GitHub Security Advisories](https://github.com/marylin/buildloud/security/advisories/new) (preferred)
-3. Or email: marylin@whateverai.com
+3. Or email: hello@whateverai.dev
 
 ## Scope
 
