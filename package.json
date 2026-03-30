@@ -1,6 +1,6 @@
 {
   "name": "buildloud",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "You build. BuildLoud documents it. A Claude Code plugin that auto-captures coding sessions into a build-in-public journal. Zero dependencies, zero API keys.",
   "type": "module",
   "engines": {
