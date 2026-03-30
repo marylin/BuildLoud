@@ -112,5 +112,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - **Intelligence layer:** Deterministic social-worthiness scoring (0-10), milestone detection (new project, shipped, persistence, breakthrough, volume)
 - **Output layer:** Weekly digest generator (Haiku narrative + Resend email), seo-engine topic-seeds feed (optional)
 - 46 unit + integration tests, zero external API calls in tests
-- n8n workflow docs for PR hook and weekly digest automation
 - Supabase-to-Neon migration (single `@neondatabase/serverless` dependency)

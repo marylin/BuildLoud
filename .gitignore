@@ -1,54 +1,35 @@
-# Runtime / generated data
-lib/config.json
-lib/cache.json
-pending-sync.jsonl
-
-# Journal entries (personal, generated per-user)
-2[0-9][0-9][0-9]/
-weekly/*.md
-
-# Environment
-.env
-.env.local
-.env.*.local
-
 # Dependencies
 node_modules/
 package-lock.json
 
-# Test artifacts
-tests/test-*
+# Runtime state (generated per-user)
+lib/cache.json
+lib/config.json
+pending-sync.jsonl
 
-# Backup files
+# Journal entries (personal, generated per-user)
+2026/
+weekly/*.md
+
+# Backups and logs
 *.bak
-
-# OS
-.DS_Store
-Thumbs.db
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# Logs
 *.log
 npm-debug.log*
 
-# Local skill installs (testing only — distributable plugin is buildloud-skills/)
-.claude/skills/
+# Environment
+.env
+.env.*
+
+# Local Claude config (NOT the distributable .claude/skills/)
+.claude/settings.local.json
 
 # Internal working docs (not OSS documentation)
 docs/05-Plans/
 docs/09-Archive/
 docs/superpowers/
 
-# Vault compatibility
-.env*
-.claude/
-docs/
+# Test artifacts
+tests/test-*
 
 # Agent artifacts
 .agents/
@@ -57,7 +38,7 @@ docs/
 .playwright-mcp/
 .planning/
 
-# Test evidence & screenshots
+# Test evidence
 test-results/
 playwright-report/
 coverage/
@@ -65,3 +46,12 @@ coverage/
 test-screenshots/
 e2e-results/
 *.test-screenshot.*
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

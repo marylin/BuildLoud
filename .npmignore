@@ -2,7 +2,6 @@
 weekly/
 tests/
 docs/
-n8n/
 .github/
 .env*
 pending-sync.jsonl
@@ -11,6 +10,5 @@ pending-sync.jsonl.tmp
 lib/config.json
 cache.json*
 hooks.example.json
-buildloud-skills/
 *.lock
 *.bak
