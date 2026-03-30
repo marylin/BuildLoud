@@ -25,11 +25,16 @@ BuildLoud watches your Claude Code sessions and captures these moments automatic
 ## Install
 
 ```bash
-git clone https://github.com/marylin/buildloud.git
-cd buildloud
+npm install -g buildloud
 ```
 
-That's it. No `npm install`. Zero dependencies.
+Or clone directly:
+
+```bash
+git clone https://github.com/marylin/buildloud.git
+```
+
+Zero runtime dependencies — pure Node.js built-ins.
 
 ### Add the Claude Code plugin
 
@@ -192,7 +197,7 @@ journey recover                 # Process orphaned sessions
 
 - **Node.js 18+** (uses native `fetch`, `node:test`, `parseArgs`)
 - **Claude Code** (the hooks and skills run inside it)
-- That's it. No npm packages. No API keys. No accounts to create.
+- That's it. Zero runtime dependencies. No API keys. No accounts to create.
 
 ## License
 
