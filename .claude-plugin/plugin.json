@@ -1,0 +1,21 @@
+{
+  "name": "buildloud",
+  "description": "Auto-capture your coding sessions into a build-in-public journal. Scores entries, writes in your voice, feeds content pipelines. Zero dependencies.",
+  "version": "1.0.1",
+  "author": {
+    "name": "Marylin Alarcon",
+    "url": "https://github.com/marylin"
+  },
+  "homepage": "https://github.com/marylin/buildloud",
+  "repository": "https://github.com/marylin/buildloud",
+  "license": "AGPL-3.0",
+  "keywords": [
+    "buildloud",
+    "build-in-public",
+    "journal",
+    "claude-code",
+    "developer-tools",
+    "scoring",
+    "content-automation"
+  ]
+}
