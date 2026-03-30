@@ -1,5 +1,8 @@
 # BuildLoud Configuration
 
+<!-- This file is created by /journey-init at ~/.claude/journey/config.md -->
+<!-- Copy this template and fill in your own values to get started. -->
+
 ## Voice
 <!-- Describe your writing style. How do you talk when sharing what you build? -->
 Direct, honest, first-person. Short sentences.
@@ -19,3 +22,20 @@ Direct, honest, first-person. Short sentences.
 - notification: silent
 - platforms: twitter, linkedin
 - score_threshold: 5
+- mode: basic
+
+## Hook Mode
+
+<!-- Controls what happens when the Stop hook processes your session. -->
+<!-- Set via the `mode` field under Preferences above. -->
+
+<!-- **basic** (default) — Score and write journal entries locally. No AI rewriting. -->
+<!--   Best for: quiet capture, review entries later with /journal-review. -->
+
+<!-- **enhanced** — Same as basic, plus prints a nudge at session end listing -->
+<!--   how many high-score entries are ready for voice rewriting. -->
+<!--   Best for: awareness without interruption. -->
+
+<!-- **full** — Same as enhanced, plus outputs a rewrite prompt with your voice -->
+<!--   profile so Claude can rewrite entries in your style during the session. -->
+<!--   Best for: end-to-end automation, publish-ready drafts on every session. -->

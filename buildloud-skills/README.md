@@ -45,7 +45,7 @@ No npm install needed. No API keys. No database. Zero configuration beyond the p
 ## How It Works
 
 - **Hooks** capture git commits and PR events automatically during your Claude Code sessions
-- **Stop hook** (agent) processes the session — scores entries, writes them in your voice
+- **Stop hook** (command) processes the session — scores entries, writes them in your voice
 - **Skills** let you review, publish, and digest entries on-demand
 - **All data** lives in `~/.claude/journey/` as markdown files
 

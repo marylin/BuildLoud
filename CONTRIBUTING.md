@@ -11,7 +11,7 @@ That's it. No database, no API keys, no accounts to create.
 
 1. Fork and clone the repo
 2. Run `/journey-init` in Claude Code to set up your voice profile
-3. Merge `hooks.example.json` into `~/.claude/settings.json` (optional, for auto-capture)
+3. Merge [`hooks.example.json`](hooks.example.json) into `~/.claude/settings.json` (optional, for auto-capture)
 
 ## Testing
 
@@ -19,7 +19,7 @@ That's it. No database, no API keys, no accounts to create.
 npm test
 ```
 
-102 tests across 17 suites. All run locally with no external calls. Tests use temp directories and are fully isolated.
+107 tests across 19 suites. All run locally with no external calls. Tests use temp directories and are fully isolated.
 
 ## Making Changes
 
