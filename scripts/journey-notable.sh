@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
+trap 'exit 0' ERR
 # journey-notable.sh — PostToolUse hook that logs notable events (PR creation, PR merges,
 # branch merges) to a session-scoped JSONL file.
 # Reads tool_input JSON from stdin, extracts the command,
 # and appends a structured JSON line to ~/.claude/journey-sessions/{session-id}.jsonl.
+
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 
 log_error() {
   mkdir -p "$HOME/.claude/debug" 2>/dev/null
