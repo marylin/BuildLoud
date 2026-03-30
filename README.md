@@ -5,114 +5,121 @@
 [![Node.js 18+](https://img.shields.io/badge/node-18%2B-green.svg)](https://nodejs.org)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](package.json)
 
-**You build. BuildLoud documents it.**
-
-A Claude Code plugin that automatically captures your coding sessions into a build-in-public journal. Every commit, every PR, every breakthrough — scored, timestamped, and written in your voice. No API keys. No database. No configuration beyond "clone and go."
+**Auto-capture your coding sessions into a build-in-public journal.**
 
 ```
-You code normally
-  → hooks capture commits and PRs silently
-    → Claude scores and writes a journal entry in your voice
-      → you review, curate, publish when ready
+you commit code
+  -> hooks silently log commits and PRs to a session file
+    -> BuildLoud scores and writes a journal entry in your voice
 ```
 
-## Why
-
-You ship features at 2am. You crack a bug after three hours. You accidentally build something bigger than planned. These are the moments that make great build-in-public content — and you forget all of them by morning.
-
-BuildLoud watches your Claude Code sessions and captures these moments automatically. When you're ready to share, your entries are already 80-90% post-ready in your voice.
-
-## Install
+## Quickstart
 
 ```bash
-npm install -g buildloud
-```
-
-Or clone directly:
-
-```bash
+# 1. Clone (npm coming soon)
 git clone https://github.com/marylin/buildloud.git
-```
 
-Zero runtime dependencies — pure Node.js built-ins.
-
-### Add the Claude Code plugin
-
-```bash
+# 2. Add the Claude Code plugin
 /plugin add github:marylin/buildloud/buildloud-skills
+
+# 3. Set up your voice profile
+/journey-init
+
+# 4. Code normally — hooks capture everything automatically
+
+# 5. Check your journal
+journey status
 ```
 
-Then run `/journey-init` to set up your voice profile.
-
-### Add hooks for automatic capture
-
-Merge the entries from [`hooks.example.json`](hooks.example.json) into `~/.claude/settings.json`. Replace `$BUILDLOUD_PATH` with your clone path.
-
-## How It Works
-
-**Three layers, zero external services:**
-
-```
-HOOKS (automatic — you never think about these)
-  git commit     → captures commit to session file
-  gh pr / merge  → flags notable events
-  session ends   → Claude scores + writes entry in your voice
-
-SKILLS (on-demand — you invoke when ready)
-  /journal         → log a moment manually
-  /journal-review  → browse and curate entries by score
-  /journal-publish → rewrite entries for Twitter/LinkedIn/blog
-  /journal-digest  → weekly narrative summary
-
-CLI (local queries — instant, offline)
-  journey status   → streaks, counts, pending sessions
-  journey search   → grep your journal
-  journey doctor   → verify your setup
-  journey recover  → rescue orphaned sessions
-```
-
-**All data lives in `~/.claude/journey/` as markdown files.** No database. No cloud sync. Git-trackable if you want, invisible if you don't.
+Merge [`hooks.example.json`](hooks.example.json) into `~/.claude/settings.json` to enable automatic capture. Replace `$BUILDLOUD_PATH` with your clone path.
 
 ## Processing Modes
 
-BuildLoud supports three processing modes, configured in `~/.claude/journey/config.md`:
+Configured in `~/.claude/journey/config.md`:
 
-| Mode | AI Usage | Token Cost | Description |
-|------|----------|------------|-------------|
-| **basic** (default) | None | 0 | Raw commit summaries, deterministic scoring. Safe for all users. |
-| **enhanced** | Prompt | ~200-500/session | Notifies about high-score entries for voice rewriting via `/journal-review`. |
-| **full** | Agent | ~1000-5000/session | Full agent rewriting with tool access for richer context. |
+| Mode | AI Usage | Token Cost | What Happens |
+|------|----------|------------|--------------|
+| **basic** (default) | None | 0 | Raw commit summaries, deterministic scoring |
+| **enhanced** | Prompt | ~200-500/session | Notifies about high-score entries for voice rewriting |
+| **full** | Agent | ~1000-5000/session | Agent rewrites entries with tool access for richer context |
 
-To change mode, add to `~/.claude/journey/config.md`:
+All modes save raw entries first. If AI rewriting fails, entries are preserved as-is.
 
-```
+```markdown
 ## Hook Mode
 - mode: enhanced
 ```
 
-All modes save raw entries first. If AI rewriting fails or times out, your entries are preserved as-is. No data loss.
+## Skills
+
+| Command | Description |
+|---------|-------------|
+| `/journey-init` | Set up voice profile, notifications, platforms |
+| `/journal <text>` | Log an entry (quick mode) |
+| `/journal` | Log an entry (guided -- asks what happened) |
+| `/j <text>` | Shortcut for `/journal` |
+| `/journal-review` | Browse and curate entries by score |
+| `/journal-publish` | Rewrite entries for Twitter, LinkedIn, or blog |
+| `/journal-digest` | Generate weekly narrative summary |
+
+## CLI Commands
+
+```bash
+journey log "shipped auth" --type feature    # Manual entry with scoring
+journey status                               # Streaks, counts, pending sessions
+journey search "auth"                        # Search journal entries
+journey doctor                               # Check hooks, config, cache health
+journey recover                              # Process orphaned session files
+journey process-session --file PATH          # Score session data (used by hooks)
+```
+
+Example output from `journey status`:
+
+```
+BuildLoud Status
+  Current streak: 5 days
+  Longest streak: 12 days
+  Total entries:  47
+  Pending:        2 sessions
+  Last entry:     2026-03-29
+```
+
+## Hook Configuration
+
+BuildLoud uses four hooks in `~/.claude/settings.json`:
+
+| Hook | Trigger | What It Does |
+|------|---------|--------------|
+| **PostToolUse** | `Bash(git commit*)` | Appends commit data to the session JSONL file |
+| **PostToolUse** | `Bash(gh pr *)\|Bash(git merge*)` | Flags PRs and merges as notable events |
+| **Stop** | Session ends | Scores the session and writes journal entries |
+| **SessionStart** | Session starts | Nudges about unreviewed high-score entries |
+
+All hooks are `command` type, exit 0 on all paths (crash-proof), and run with 3-10s timeouts. See [`hooks.example.json`](hooks.example.json) for the full configuration.
 
 ## Scoring
 
-Every entry gets a score from 0-10. No AI — pure heuristics:
+Deterministic, no AI. Every entry gets a 0-10 score based on heuristics:
 
 | Signal | Points |
 |--------|--------|
-| Milestone (shipped, launched) | +4 |
+| Milestone keyword (shipped, launched) | +4 |
 | Insight or blocker | +3 |
-| Feature | +2 |
-| Bugfix, refactor, infra | +1 |
 | Manually logged via `/journal` | +3 |
-| Milestone detected (streak, new project) | +2 |
-| First entry for a project | +2 |
-| Contains insight phrases | +1 |
+| Feature | +2 |
+| New project (first entry) | +2 |
+| Milestone detected (streak, volume) | +2 |
+| Bugfix, refactor, infra | +1 |
+| Insight phrases | +1 |
 | Hot project (3+ sessions/week) | +1 |
 
-**Score 7+** = ready to share. **Score 5-6** = solid work, digest-worthy. **Below 5** = journal only.
+- **7+** = ready to share
+- **5-6** = solid work, digest-worthy
+- **Below 5** = journal-only
 
 ## Voice Profile
 
-On first run, `/journey-init` asks how you write. Your answers become `~/.claude/journey/config.md`:
+`/journey-init` captures how you write. Stored in `~/.claude/journey/config.md`:
 
 ```markdown
 ## Voice
@@ -127,78 +134,54 @@ Sarcastic, honest, first-person. Short sentences.
 - "Thrilled to share"
 ```
 
-Every auto-generated entry matches your voice. Per-repo overrides via `.claude/journey.md`.
+Per-repo overrides via `.claude/journey.md`.
 
-## Skills
+## Data and Privacy
 
-| Command | What it does |
-|---------|-------------|
-| `/journey-init` | Set up voice, notifications, platforms |
-| `/journal <text>` | Log an entry (quick mode) |
-| `/journal` | Log an entry (guided — asks what happened) |
-| `/j <text>` | Shortcut for `/journal` |
-| `/journal-review` | Browse entries by score, curate, clean up |
-| `/journal-publish` | Rewrite entries for Twitter, LinkedIn, or blog |
-| `/journal-digest` | Generate weekly narrative summary |
+- **All data is local**: `~/.claude/journey/` -- markdown files and JSON cache
+- **What's captured**: commit messages, PR titles, timestamps, project names
+- **What's NOT captured**: diffs, file contents, credentials, environment variables
+- **Nothing is sent anywhere**: no telemetry, no cloud sync, no external API calls
+- **Git-trackable**: add `~/.claude/journey/` to a repo if you want version history
 
-## CLI
-
-```bash
-journey log "shipped auth" --type feature    # Manual entry with scoring
-journey status                               # Streaks, counts, pending sessions
-journey search "auth"                        # Search journal entries
-journey doctor                               # Check hooks, config, cache health
-journey recover                              # Process orphaned session files
+```
+~/.claude/journey/
+  entries/YYYY/MM/YYYY-MM-DD.md   # Journal entries (one file per day)
+  weekly/YYYY-WNN.md              # Weekly digests
+  cache.json                      # Streaks, fingerprints, project stats
+  config.md                       # Your voice profile
+  errors.log                      # Error log with rotation
 ```
 
-## File Structure
+## Project Structure
 
 ```
 buildloud/
-├── bin/journey.js              # CLI (6 commands)
-├── lib/
-│   ├── score.js                # Deterministic scoring + milestones
-│   ├── cache.js                # Streaks, fingerprints, local state
-│   ├── markdown.js             # Daily markdown file writer
-│   ├── errors.js               # Error logging with rotation
-│   └── cli/                    # CLI command implementations
-├── scripts/
-│   ├── journey-accumulate.sh   # Hook: capture git commits
-│   └── journey-notable.sh     # Hook: capture PRs and merges
-├── buildloud-skills/           # Claude Code plugin (6 skills)
-├── tests/                      # 102 tests, 17 suites
-├── hooks.example.json          # Hook configuration template
-├── config.example.md           # Voice profile template
-└── package.json                # Zero dependencies
+  bin/journey.js                  # CLI entry point (6 commands)
+  lib/
+    score.js                      # Deterministic scoring + milestones
+    cache.js                      # Streaks, fingerprints, local state
+    markdown.js                   # Daily markdown file writer
+    errors.js                     # Error logging with rotation
+    cli/                          # CLI command implementations
+  scripts/
+    journey-accumulate.sh         # Hook: capture git commits
+    journey-notable.sh            # Hook: capture PRs and merges
+    journey-stop.sh               # Hook: session-end scoring
+    journey-sessionstart.sh       # Hook: session-start nudge
+  buildloud-skills/               # Claude Code plugin (6 skills)
+  tests/                          # 107 tests, 19 suites
+  hooks.example.json              # Hook configuration template
+  config.example.md               # Voice profile template
+  package.json                    # Zero dependencies
 ```
-
-**Journal data** (not in this repo):
-```
-~/.claude/journey/
-├── config.md                   # Your voice profile
-├── entries/YYYY/MM/DD.md       # Journal entries
-├── weekly/YYYY-WNN.md          # Digests
-├── cache.json                  # Local state
-└── errors.log                  # Error log
-```
-
-## Troubleshooting
-
-```bash
-journey doctor                  # Full diagnostic check
-journey recover                 # Process orphaned sessions
-```
-
-- Error logs: `~/.claude/journey/errors.log`
-- Cache issues? Delete `~/.claude/journey/cache.json` (auto-recreated)
-- Hooks not firing? Check `journey doctor` for hook configuration status
 
 ## Requirements
 
-- **Node.js 18+** (uses native `fetch`, `node:test`, `parseArgs`)
-- **Claude Code** (the hooks and skills run inside it)
-- That's it. Zero runtime dependencies. No API keys. No accounts to create.
+- **Node.js 18+** (uses native `node:test`, `parseArgs`)
+- **Claude Code** (hooks and skills run inside it)
+- Zero runtime dependencies. No API keys. No accounts.
 
 ## License
 
-[AGPL-3.0](LICENSE) — Copyright 2026 [Marylin Alarcon](https://github.com/marylin)
+[AGPL-3.0](LICENSE) -- Copyright 2026 [Marylin Alarcon](https://github.com/marylin)
