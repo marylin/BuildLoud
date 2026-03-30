@@ -1,8 +1,8 @@
-# Journey Logger v2 — Architecture Redesign
+# BuildLoud v2 — Architecture Redesign
 
 ## Problem
 
-Journey Logger v1 runs as a Claude Code plugin but architecturally behaves as a standalone backend service. It manages its own Anthropic API key, Neon database, Resend email, and SEO engine integration — all from within Claude Code hooks. When the API key expired, the cascade (circuit breaker → retry queue overflow → cache corruption) made Claude Code unresponsive.
+BuildLoud v1 runs as a Claude Code plugin but architecturally behaves as a standalone backend service. It manages its own Anthropic API key, Neon database, Resend email, and SEO engine integration — all from within Claude Code hooks. When the API key expired, the cascade (circuit breaker → retry queue overflow → cache corruption) made Claude Code unresponsive.
 
 The fundamental mismatch: calling an external AI API from inside the AI tool that's already running.
 
@@ -105,7 +105,7 @@ STORAGE (all under ~/.claude/journey/)
 **Agent prompt (full template):**
 
 ```
-You are the journey-logger agent. Your job is to process a coding session's
+You are the BuildLoud agent. Your job is to process a coding session's
 commits into a post-ready journal entry.
 
 STEP 1: Read the session file.
@@ -205,7 +205,7 @@ Set once. Never asked again. User edits the config file directly for changes.
 ### Global: `~/.claude/journey/config.md`
 
 ```markdown
-# Journey Logger Configuration
+# BuildLoud Configuration
 
 ## Voice
 Sarcastic, honest, first-person. Short sentences.
@@ -243,7 +243,7 @@ No `journal_path` config key needed unless the user wants to override the defaul
 ### Per-repo override: `.claude/journey.md`
 
 ```markdown
-# Journey Logger — Project Override
+# BuildLoud — Project Override
 
 ## Voice adjustment
 More technical for this repo. Audience is developers.
@@ -479,9 +479,9 @@ Components marked "rewrite" keep their purpose but need significant changes to r
 | `scripts/journey-notable.sh` | PostToolUse hook for PR/merge events |
 | `lib/cli/recover.js` | Orphan session file recovery |
 | `lib/cli/process-session.js` | Scoring pipeline for agent hook (replaces write-entry.js) |
-| `journey-logger-skills/journey-init.md` | Onboarding skill |
-| `journey-logger-skills/journal-review.md` | Curation skill |
-| `journey-logger-skills/journal-digest.md` | Digest skill |
+| `buildloud-skills/journey-init.md` | Onboarding skill |
+| `buildloud-skills/journal-review.md` | Curation skill |
+| `buildloud-skills/journal-digest.md` | Digest skill |
 | `config.example.md` | Voice/preference template |
 | `hooks.example.json` | Updated hook configuration |
 
@@ -506,7 +506,7 @@ build-log/
 ├── scripts/
 │   ├── journey-accumulate.sh   # PostToolUse hook (rewrite: session-scoped files)
 │   └── journey-notable.sh     # PostToolUse hook for PRs/merges (NEW)
-├── journey-logger-skills/
+├── buildloud-skills/
 │   ├── journal.md              # /journal skill (update)
 │   ├── j.md                    # /j alias (keep as-is)
 │   ├── journal-review.md       # Curation skill (NEW)

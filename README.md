@@ -196,4 +196,4 @@ journey recover                 # Process orphaned sessions
 
 ## License
 
-[AGPL-3.0](LICENSE) — Copyright 2026 WhateverAI (Marylin Ritchie)
+[AGPL-3.0](LICENSE) — Copyright 2026 [Marylin Alarcon](https://github.com/marylin)

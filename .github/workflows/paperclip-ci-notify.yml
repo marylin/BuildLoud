@@ -1,0 +1,125 @@
+name: Paperclip CI Notify
+
+on:
+  pull_request:
+    branches: [develop]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+  statuses: read
+  checks: read
+  contents: read
+
+jobs:
+  ci-status:
+    name: Check CI & Merge Status
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Wait for CI checks to start
+        run: sleep 120
+
+      - name: Check CI status
+        id: ci_check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const sha = context.payload.pull_request.head.sha;
+            const pr_number = context.payload.pull_request.number;
+
+            // Get check runs for the head SHA
+            const { data: checkRuns } = await github.rest.checks.listForRef({
+              owner,
+              repo,
+              ref: sha,
+            });
+
+            // Get commit statuses
+            const { data: statuses } = await github.rest.repos.getCombinedStatusForRef({
+              owner,
+              repo,
+              ref: sha,
+            });
+
+            // Summarize check runs
+            const checks = checkRuns.check_runs.filter(c => c.name !== 'Check CI & Merge Status');
+            const failed = checks.filter(c => c.conclusion === 'failure' || c.conclusion === 'cancelled');
+            const pending = checks.filter(c => c.status !== 'completed');
+            const passed = checks.filter(c => c.conclusion === 'success');
+
+            let summary = `## CI Status for PR #${pr_number}\n\n`;
+            summary += `| Check | Status | Conclusion |\n`;
+            summary += `|-------|--------|------------|\n`;
+
+            for (const check of checks) {
+              const status = check.status === 'completed' ? check.conclusion : check.status;
+              const icon = check.conclusion === 'success' ? '✅' :
+                           check.conclusion === 'failure' ? '❌' :
+                           check.status === 'in_progress' ? '🔄' : '⏳';
+              summary += `| ${check.name} | ${icon} ${status} | ${check.conclusion || 'pending'} |\n`;
+            }
+
+            // Also include commit statuses
+            if (statuses.statuses.length > 0) {
+              summary += `\n### Commit Statuses\n\n`;
+              for (const s of statuses.statuses) {
+                const icon = s.state === 'success' ? '✅' : s.state === 'failure' ? '❌' : '⏳';
+                summary += `- ${icon} **${s.context}**: ${s.state}\n`;
+              }
+            }
+
+            summary += `\n**Overall**: ${passed.length} passed, ${failed.length} failed, ${pending.length} pending\n`;
+
+            // Log failures to step summary
+            if (failed.length > 0) {
+              summary += `\n### ❌ Failed Checks\n\n`;
+              for (const f of failed) {
+                summary += `- **${f.name}**: ${f.conclusion} — [Details](${f.html_url})\n`;
+              }
+            }
+
+            core.summary.addRaw(summary);
+            await core.summary.write();
+
+            if (failed.length > 0) {
+              core.setFailed(`${failed.length} CI check(s) failed`);
+            }
+
+            return { passed: passed.length, failed: failed.length, pending: pending.length };
+
+      - name: Check merge conflicts
+        id: merge_check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pr_number = context.payload.pull_request.number;
+
+            const { data: pr } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: pr_number,
+            });
+
+            let summary = `## Merge Status for PR #${pr_number}\n\n`;
+
+            if (pr.mergeable === null) {
+              summary += `⏳ **Mergeability**: Still being computed...\n`;
+            } else if (pr.mergeable === false) {
+              summary += `❌ **Merge Conflicts Detected**\n\n`;
+              summary += `This PR has merge conflicts with the \`develop\` branch.\n`;
+              summary += `The branch needs to be rebased or conflicts resolved before merging.\n`;
+              core.setFailed('PR has merge conflicts');
+            } else {
+              summary += `✅ **No Merge Conflicts** — PR is mergeable\n`;
+            }
+
+            summary += `\n**Mergeable state**: \`${pr.mergeable_state}\`\n`;
+
+            core.summary.addRaw(summary);
+            await core.summary.write();
