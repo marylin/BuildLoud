@@ -4,7 +4,7 @@
   "description": "You build. BuildLoud documents it. A Claude Code plugin that auto-captures coding sessions into a build-in-public journal. Zero dependencies, zero API keys.",
   "type": "module",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "bin": {
     "journey": "./bin/journey.js"

@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/marylin/buildloud/actions/workflows/ci.yml/badge.svg)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
-[![Node.js 18+](https://img.shields.io/badge/node-18%2B-green.svg)](https://nodejs.org)
+[![Node.js 20+](https://img.shields.io/badge/node-20%2B-green.svg)](https://nodejs.org)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](package.json)
 
 **Auto-capture your coding sessions into a build-in-public journal.**
@@ -178,7 +178,7 @@ buildloud/
 
 ## Requirements
 
-- **Node.js 18+** (uses native `node:test`, `parseArgs`)
+- **Node.js 20+** (uses `import.meta.dirname`, `node:test`, `parseArgs`)
 - **Claude Code** (hooks and skills run inside it)
 - Zero runtime dependencies. No API keys. No accounts.
 
