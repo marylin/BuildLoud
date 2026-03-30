@@ -16,22 +16,19 @@ you commit code
 ## Quickstart
 
 ```bash
-# 1. Clone (npm coming soon)
-git clone https://github.com/marylin/buildloud.git
+# 1. Install the plugin
+/plugin add github:marylin/buildloud
 
-# 2. Add the Claude Code plugin
-/plugin add github:marylin/buildloud/buildloud-skills
-
-# 3. Set up your voice profile
+# 2. Set up your voice profile
 /journey-init
 
-# 4. Code normally — hooks capture everything automatically
+# 3. Code normally — hooks capture everything automatically
 
-# 5. Check your journal
+# 4. Check your journal
 journey status
 ```
 
-Merge [`hooks.example.json`](hooks.example.json) into `~/.claude/settings.json` to enable automatic capture. Replace `$BUILDLOUD_PATH` with your clone path.
+That's it. Hooks auto-register on install — no manual configuration needed.
 
 ## Processing Modes
 
@@ -95,7 +92,7 @@ BuildLoud uses four hooks in `~/.claude/settings.json`:
 | **Stop** | Session ends | Scores the session and writes journal entries |
 | **SessionStart** | Session starts | Nudges about unreviewed high-score entries |
 
-All hooks are `command` type, exit 0 on all paths (crash-proof), and run with 3-10s timeouts. See [`hooks.example.json`](hooks.example.json) for the full configuration.
+All hooks are `command` type, exit 0 on all paths (crash-proof), and run with 3-10s timeouts. Hooks auto-register when you install the plugin.
 
 ## Scoring
 
@@ -157,21 +154,24 @@ Per-repo overrides via `.claude/journey.md`.
 
 ```
 buildloud/
+  .claude-plugin/
+    plugin.json                   # Plugin manifest
+    hooks/hooks.json              # Auto-registered hooks (4 hooks)
+    skills/                       # 6 skills (SKILL.md per directory)
   bin/journey.js                  # CLI entry point (6 commands)
   lib/
     score.js                      # Deterministic scoring + milestones
     cache.js                      # Streaks, fingerprints, local state
     markdown.js                   # Daily markdown file writer
     errors.js                     # Error logging with rotation
+    config.js                     # Mode + voice reader
     cli/                          # CLI command implementations
   scripts/
     journey-accumulate.sh         # Hook: capture git commits
     journey-notable.sh            # Hook: capture PRs and merges
     journey-stop.sh               # Hook: session-end scoring
     journey-sessionstart.sh       # Hook: session-start nudge
-  buildloud-skills/               # Claude Code plugin (6 skills)
   tests/                          # 107 tests, 19 suites
-  hooks.example.json              # Hook configuration template
   config.example.md               # Voice profile template
   package.json                    # Zero dependencies
 ```
