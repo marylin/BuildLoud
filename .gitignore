@@ -65,10 +65,3 @@ coverage/
 test-screenshots/
 e2e-results/
 *.test-screenshot.*
-
-# OS / IDE
-.DS_Store
-Thumbs.db
-*.swp
-*.swo
-*~
