@@ -37,7 +37,13 @@ Thumbs.db
 *.log
 npm-debug.log*
 
+# Local skill installs (testing only — distributable plugin is buildloud-skills/)
+.claude/skills/
+
 # Internal working docs (not OSS documentation)
 docs/05-Plans/
 docs/09-Archive/
 docs/superpowers/
+.env*
+.claude/
+docs/
