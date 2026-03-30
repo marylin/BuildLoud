@@ -68,6 +68,25 @@ CLI (local queries — instant, offline)
 
 **All data lives in `~/.claude/journey/` as markdown files.** No database. No cloud sync. Git-trackable if you want, invisible if you don't.
 
+## Processing Modes
+
+BuildLoud supports three processing modes, configured in `~/.claude/journey/config.md`:
+
+| Mode | AI Usage | Token Cost | Description |
+|------|----------|------------|-------------|
+| **basic** (default) | None | 0 | Raw commit summaries, deterministic scoring. Safe for all users. |
+| **enhanced** | Prompt | ~200-500/session | Notifies about high-score entries for voice rewriting via `/journal-review`. |
+| **full** | Agent | ~1000-5000/session | Full agent rewriting with tool access for richer context. |
+
+To change mode, add to `~/.claude/journey/config.md`:
+
+```
+## Hook Mode
+- mode: enhanced
+```
+
+All modes save raw entries first. If AI rewriting fails or times out, your entries are preserved as-is. No data loss.
+
 ## Scoring
 
 Every entry gets a score from 0-10. No AI — pure heuristics:
