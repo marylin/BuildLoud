@@ -15,12 +15,14 @@ function parseEntries(content, dateStr) {
   const lines = content.split('\n');
   const entries = [];
   let current = null;
+  let activePlatform = null; // track multi-line blockquote capture
 
   for (const line of lines) {
     if (line.startsWith('# ')) continue;
 
     const headingMatch = line.match(HEADING_RE);
     if (headingMatch) {
+      activePlatform = null;
       if (current) entries.push(current);
       current = {
         time: headingMatch[1],
@@ -34,10 +36,24 @@ function parseEntries(content, dateStr) {
 
     if (!current) continue;
 
+    // Start of a new blockquote platform section
     const bqMatch = line.match(BLOCKQUOTE_RE);
     if (bqMatch) {
-      current.published[bqMatch[1]] = bqMatch[2];
+      activePlatform = bqMatch[1];
+      current.published[activePlatform] = bqMatch[2];
       continue;
+    }
+
+    // Continuation of a multi-line blockquote
+    if (activePlatform && (line.startsWith('> ') || line === '>')) {
+      const text = line === '>' ? '' : line.slice(2);
+      current.published[activePlatform] += '\n' + text;
+      continue;
+    }
+
+    // Non-blockquote line ends blockquote capture
+    if (activePlatform && !line.startsWith('>')) {
+      activePlatform = null;
     }
 
     if (current.body.length > 0 || line.trim() !== '') {
