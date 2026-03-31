@@ -15,7 +15,7 @@ Before executing, check if `~/.claude/journey/config.md` exists. If not, run `/j
    - `--week YYYY-WNN`: specific ISO week
    - `--days N`: last N days
 
-2. **Read entries.** Read all markdown files in range from `~/.claude/journey/entries/YYYY/MM/YYYY-MM-DD.md`. Parse each entry: time, project, type, score, summary.
+2. **Read entries.** Scan `~/.claude/journey/entries/YYYY/MM/DD/*/raw.md` in the date range. Parse each entry's YAML frontmatter for project, type, score, and date. Parse headings for time and summary text.
 
 3. **Read voice profile** from `~/.claude/journey/config.md`.
 
