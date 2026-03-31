@@ -16,19 +16,22 @@ you commit code
 ## Quickstart
 
 ```bash
-# 1. Install the plugin
-/plugin add github:marylin/buildloud
+# 1. Add the marketplace
+/plugin marketplace add marylin/buildloud
 
-# 2. Set up your voice profile
+# 2. Install the plugin
+/plugin install buildloud@buildloud
+
+# 3. Set up your voice profile
 /journey-init
 
-# 3. Code normally — hooks capture everything automatically
+# 4. Code normally — hooks capture everything automatically
 
-# 4. Check your journal
+# 5. Check your journal
 journey status
 ```
 
-That's it. Hooks auto-register on install — no manual configuration needed.
+Hooks auto-register on install — no manual configuration needed.
 
 ## Processing Modes
 
