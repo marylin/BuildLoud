@@ -116,10 +116,16 @@ describe('buildloud v2 integration', () => {
     for (const year of years) {
       const months = readdirSync(join(entriesDir, year)).filter(d => /^\d{2}$/.test(d));
       for (const month of months) {
-        const files = readdirSync(join(entriesDir, year, month)).filter(f => f.endsWith('.md'));
-        for (const file of files) {
-          const content = readFileSync(join(entriesDir, year, month, file), 'utf8');
-          if (content.includes('recover-proj')) found = true;
+        const days = readdirSync(join(entriesDir, year, month)).filter(d => /^\d{2}$/.test(d));
+        for (const day of days) {
+          const projects = readdirSync(join(entriesDir, year, month, day));
+          for (const project of projects) {
+            const files = readdirSync(join(entriesDir, year, month, day, project)).filter(f => f.endsWith('.md'));
+            for (const file of files) {
+              const content = readFileSync(join(entriesDir, year, month, day, project, file), 'utf8');
+              if (content.includes('recover-proj')) found = true;
+            }
+          }
         }
       }
     }

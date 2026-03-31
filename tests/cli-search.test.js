@@ -15,9 +15,9 @@ afterEach(() => {
 
 describe('journey search', () => {
   it('finds matching lines in local markdown', async () => {
-    const dir = join(TMP, '2026', '03');
+    const dir = join(TMP, '2026', '03', '21', 'proj');
     mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, '2026-03-21.md'), '# 2026-03-21\n## 10:00 — proj [feature]\nBuilt the auth system\n');
+    writeFileSync(join(dir, 'raw.md'), '---\nproject: proj\ntype: feature\nscore: 3\ndate: 2026-03-21T10:00:00.000Z\n---\n\n## 10:00\nBuilt the auth system\n');
     const { searchLocal } = await import('../lib/cli/search.js');
     const results = searchLocal('auth', TMP);
     assert.ok(results.length > 0);
