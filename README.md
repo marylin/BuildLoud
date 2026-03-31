@@ -136,6 +136,12 @@ Sarcastic, honest, first-person. Short sentences.
 
 Per-repo overrides via `.claude/journey.md`.
 
+## Obsidian Integration (Optional)
+
+If you use [Obsidian](https://obsidian.md), `/journey-init` can link your journal entries so they appear in your vault automatically. Just say "yes" when asked during setup.
+
+Your entries show up at `<obsidian-vault>/journal/YYYY/MM/YYYY-MM-DD.md` — browse, search, and link them like any other note.
+
 ## Data and Privacy
 
 - **All data is local**: `~/.claude/journey/` -- markdown files and JSON cache
