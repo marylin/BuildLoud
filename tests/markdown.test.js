@@ -103,4 +103,38 @@ describe('markdown writer', () => {
     assert.equal(md.getBasePath(), EXPECTED_DEFAULT);
     md.setBasePath(TEST_DIR);
   });
+
+  it('writePublished creates platform file with frontmatter', () => {
+    const date = new Date('2026-03-20T14:00:00Z');
+    md.writePublished({
+      project: 'proj',
+      platform: 'twitter',
+      text: 'Shipped the thing today!',
+    }, date);
+    const path = join(TEST_DIR, '2026', '03', '20', 'proj', 'twitter.md');
+    assert.ok(existsSync(path));
+    const content = readFileSync(path, 'utf8');
+    assert.ok(content.includes('project: proj'));
+    assert.ok(content.includes('platform: twitter'));
+    assert.ok(content.includes('source: raw.md'));
+    assert.ok(content.includes('Shipped the thing today!'));
+  });
+
+  it('writePublished overwrites existing platform file', () => {
+    const date = new Date('2026-03-20T14:00:00Z');
+    md.writePublished({ project: 'proj', platform: 'twitter', text: 'Version 1' }, date);
+    md.writePublished({ project: 'proj', platform: 'twitter', text: 'Version 2' }, date);
+    const path = join(TEST_DIR, '2026', '03', '20', 'proj', 'twitter.md');
+    const content = readFileSync(path, 'utf8');
+    assert.ok(!content.includes('Version 1'));
+    assert.ok(content.includes('Version 2'));
+  });
+
+  it('writePublished creates different files per platform', () => {
+    const date = new Date('2026-03-20T14:00:00Z');
+    md.writePublished({ project: 'proj', platform: 'twitter', text: 'Tweet' }, date);
+    md.writePublished({ project: 'proj', platform: 'linkedin', text: 'Post' }, date);
+    assert.ok(existsSync(join(TEST_DIR, '2026', '03', '20', 'proj', 'twitter.md')));
+    assert.ok(existsSync(join(TEST_DIR, '2026', '03', '20', 'proj', 'linkedin.md')));
+  });
 });
