@@ -2,6 +2,9 @@
   "name": "buildloud",
   "description": "Auto-capture your coding sessions into a build-in-public journal.",
   "version": "1.0.0",
+  "owner": {
+    "name": "Marylin Alarcon"
+  },
   "plugins": [
     {
       "name": "buildloud",
