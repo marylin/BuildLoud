@@ -1,0 +1,15 @@
+{
+  "name": "buildloud",
+  "description": "Auto-capture your coding sessions into a build-in-public journal.",
+  "version": "1.0.0",
+  "plugins": [
+    {
+      "name": "buildloud",
+      "description": "Auto-capture coding sessions, score entries, write in your voice. Zero dependencies.",
+      "source": {
+        "source": "github",
+        "repo": "marylin/buildloud"
+      }
+    }
+  ]
+}
