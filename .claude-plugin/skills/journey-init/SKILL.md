@@ -39,6 +39,24 @@ From their response, extract:
 "What platforms do you share on?"
   → Twitter / LinkedIn / Blog / All
 
+### Step 5: Obsidian (optional)
+"Do you use Obsidian? If so, I can link your journal entries so they show up there automatically."
+  (a) Yes — create a junction from Obsidian vault to journal entries
+  (b) No — skip
+
+If yes, ask: "Where is your Obsidian vault? (default: ~/Obsidian)"
+
+Then create a junction:
+```bash
+# PowerShell (works on Windows without admin)
+powershell -Command "New-Item -ItemType Junction -Path '<obsidian-path>/journal' -Target '$HOME/.claude/journey/entries'" 2>/dev/null
+
+# Unix fallback
+ln -s ~/.claude/journey/entries <obsidian-path>/journal 2>/dev/null
+```
+
+If the junction already exists, skip silently.
+
 ## Write Config
 
 Create `~/.claude/journey/config.md` (or `.claude/journey.md` for repo-only):
