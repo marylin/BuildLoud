@@ -7,57 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-## [2.0.0] - 2026-03-25
-
-### Breaking Changes
-- Removed Neon PostgreSQL database — markdown is the only storage layer
-- Removed Anthropic API client — Claude Code agent hooks handle AI work natively
-- Removed Resend email integration
-- Removed seo-engine integration from core (push to external projects manually)
-- Removed CLI commands: `top`, `sync`, `rehumanize`, `digest`
-- Removed `@neondatabase/serverless` — zero npm dependencies
-- Journal entries now stored at `~/.claude/journey/entries/` instead of project root
-- `.env` file no longer needed — no API keys required
-
 ### Added
-- `/journey-init` skill — first-run onboarding (voice profile, notifications, platforms)
-- `/journal-review` skill — browse and curate entries by score tier
-- `/journal-digest` skill — weekly narrative summary from markdown
-- `journey recover` CLI command — process orphaned session files
-- `journey process-session` CLI command — scoring pipeline for Stop command hook
-- `scripts/journey-notable.sh` — PostToolUse hook for PR/merge event capture
-- Session-scoped JSONL files (`~/.claude/journey-sessions/{session-id}.jsonl`)
-- `config.example.md` — voice and preference template
-- SessionStart notification hook (nudge/batch modes)
-- Integration test covering full pipeline end-to-end
+- Per-project directory structure: `entries/YYYY/MM/DD/project/raw.md`
+- `writePublished()` function for saving platform-specific published versions
+- YAML frontmatter on all entry files (project, type, score, date)
+- Local system time in entry headings (UTC in frontmatter date field)
+- Migration script (`scripts/migrate-entries.js`) for flat-to-tree conversion
+- `journey doctor` detects old vs new entry format
+- Bilingual voice profile support (Spanish + English)
 
 ### Changed
-- Stop hook: command type (called Haiku API) → command hook (scores locally, optional voice rewriting)
-- `journey-accumulate.sh`: shared file → session-scoped files with session ID
-- `/journal-publish` skill: delegates to CLI → Claude rewrites directly in user's voice
-- `lib/markdown.js` default path: project root → `~/.claude/journey/entries/`
-- `lib/cache.js` default path: `lib/cache.json` → `~/.claude/journey/cache.json`
-- `lib/errors.js` default path: `~/.claude/journey-errors.log` → `~/.claude/journey/errors.log`
-- `journey status`: DB-aware → local-only (cache + session files + error log)
-- `journey search`: removed `--db` flag, local grep only
-- `journey doctor`: removed DB/API key checks, checks hooks + config + sessions
-- Skill descriptions shortened for readability in skill lists
+- `writeEntry()` now writes to `YYYY/MM/DD/project/raw.md` instead of `YYYY/MM/YYYY-MM-DD.md`
+- `journey search` walks the deeper `YYYY/MM/DD/project/` tree
+- `/journal-publish` saves published versions as separate files instead of blockquotes
+- `/journal-review` and `/journal-digest` updated for new entry paths
+- Command namespace cleanup: custom commands use `mad-` prefix
 
-### Removed
-- `lib/api.js` — Anthropic API client with circuit breaker (~120 lines)
-- `lib/humanize.js` — Haiku-powered rewriting (~80 lines)
-- `lib/db.js` — Neon client + retry queue + dead-letter (~250 lines)
-- `lib/seo-feed.js` — cross-repo file mutation (~60 lines)
-- `lib/env.js` — .env file loader (~40 lines)
-- `lib/validate.js` — environment validation (~50 lines)
-- `lib/write-entry.js` — orchestration pipeline (~90 lines)
-- `lib/cli/top.js`, `lib/cli/sync.js`, `lib/cli/rehumanize.js`, `lib/cli/digest.js`
-- `scripts/journey-capture.js`, `scripts/generate-digest.js`, `scripts/sync-pr-entries.js`, `scripts/migrate.js`
-- `migrations/` directory
-- `pending-sync.jsonl` retry queue system
+## [1.0.1] - 2026-03-30
 
----
+### Added
+- Obsidian vault integration via junction in `/journey-init`
+- Obsidian integration section in README
 
-### Pre-release development history (v1.0.0 – v1.3.0)
+### Fixed
+- Marketplace plugin structure aligned with working third-party plugins
+- Marketplace source uses local path to prevent infinite recursion
 
-Versions 1.0.0 through 1.3.0 were internal development milestones (2026-03-20 to 2026-03-22), never published to npm. They established the core architecture — capture hooks, scoring engine, markdown journal, CLI, and skill pack — with iterative improvements to caching, deduplication, error handling, and OSS scaffolding. The v2.0.0 release above is the first public version, built on that foundation.
+## [1.0.0] - 2026-03-25
+
+First public release. Zero-dependency build-in-public journal for Claude Code.
+
+### Core
+- Auto-capture hooks: commit accumulation, PR/merge notable events, session-end scoring, session-start nudge
+- Deterministic scoring engine (0-10) with milestone detection
+- Per-user voice profile with platform-specific rewriting
+- Local-only storage: markdown entries, JSON cache, error log with rotation
+- 6 CLI commands: `log`, `status`, `search`, `doctor`, `recover`, `process-session`
+- 7 skills: `/journey-init`, `/journal`, `/j`, `/journal-review`, `/journal-publish`, `/journal-digest`
+- 3 processing modes: basic (zero tokens), enhanced (prompt), full (agent)
+
+### Architecture
+- Zero runtime dependencies (Node.js built-in APIs only)
+- Crash-proof hooks (exit 0 on all paths, 3-10s timeouts)
+- Session-scoped JSONL files for commit accumulation
+- File locking with stale lock detection for concurrent access
+- Auto-registering hooks via plugin manifest
+
+### Previous
+Versions 0.x were internal development milestones (2026-03-20 to 2026-03-24), never published. They established the core architecture with iterative improvements to caching, deduplication, error handling, and OSS scaffolding.
