@@ -13,7 +13,7 @@ If you discover a security vulnerability in BuildLoud, please report it responsi
 This policy covers the BuildLoud codebase:
 - `lib/` modules (scoring, caching, markdown writer, error logging)
 - `scripts/` (hook scripts for commit and PR capture)
-- `buildloud-skills/` (Claude Code skill definitions)
+- `.claude-plugin/skills/` (Claude Code skill definitions)
 
 Out of scope (report to their respective maintainers):
 - Claude Code itself
