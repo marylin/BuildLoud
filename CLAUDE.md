@@ -54,5 +54,5 @@ See `hooks.example.json` for configuration.
 ## Development
 
 ```
-npm test    # 107 tests, 19 suites (node:test, no external runner)
+npm test    # 117 tests, 20 suites (node:test, no external runner)
 ```
