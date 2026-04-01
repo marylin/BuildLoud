@@ -10,7 +10,7 @@ Before executing, check if `~/.claude/journey/config.md` exists. If not, run `/j
 
 ## Steps
 
-1. **Read recent entries.** Default: last 7 days. Read all markdown files from `~/.claude/journey/entries/YYYY/MM/YYYY-MM-DD.md` matching the date range. Parse each entry: time, project, type, score (⭐ = 5+), summary.
+1. **Read recent entries.** Default: last 7 days. Scan `~/.claude/journey/entries/YYYY/MM/DD/*/raw.md` matching the date range. Parse each entry's YAML frontmatter for project, type, score, and date. Parse headings for time and summary text.
 
 2. **Group by score tier and display:**
 
@@ -51,5 +51,5 @@ JOURNAL ONLY (score < 5)
 
 - Do NOT modify entries without user action.
 - Show counts per tier in the header.
-- When deleting, actually remove the entry lines from the markdown file.
-- When merging, combine summaries and keep the higher score.
+- When deleting, remove the project's `raw.md` file (and any platform files) from the day directory.
+- When merging, combine summaries into one `raw.md`, keep the higher score in frontmatter.

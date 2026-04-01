@@ -6,7 +6,8 @@ Zero-dependency build-in-public journal for Claude Code. No API keys, no databas
 
 All data lives under `~/.claude/journey/`:
 
-- `entries/YYYY/MM/YYYY-MM-DD.md` — journal entries (one file per day)
+- `entries/YYYY/MM/DD/project/raw.md` — raw journal entries (one file per project per day)
+- `entries/YYYY/MM/DD/project/{platform}.md` — published versions (twitter, linkedin, blog)
 - `weekly/YYYY-WNN.md` — weekly digests
 - `cache.json` — streaks, fingerprints, project stats
 - `errors.log` — error log with rotation
@@ -46,12 +47,12 @@ See `hooks.example.json` for configuration.
 
 - `lib/score.js` — deterministic scoring (0-10) and milestone detection
 - `lib/cache.js` — persistent local state with file locking and backup
-- `lib/markdown.js` — daily markdown writer
+- `lib/markdown.js` — per-project markdown writer (writeEntry + writePublished)
 - `lib/errors.js` — structured error logging with 500-line rotation
 - `lib/cli/process-session.js` — scoring pipeline for Stop command hook
 
 ## Development
 
 ```
-npm test    # 107 tests, 19 suites (node:test, no external runner)
+npm test    # 117 tests, 20 suites (node:test, no external runner)
 ```

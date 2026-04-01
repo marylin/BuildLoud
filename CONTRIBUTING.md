@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node.js 18+
+- Node.js 20+
 - Claude Code (for testing skills and hooks)
 
 That's it. No database, no API keys, no accounts to create.
@@ -19,7 +19,7 @@ That's it. No database, no API keys, no accounts to create.
 npm test
 ```
 
-107 tests across 19 suites. All run locally with no external calls. Tests use temp directories and are fully isolated.
+117 tests across 20 suites. All run locally with no external calls. Tests use temp directories and are fully isolated.
 
 ## Making Changes
 
@@ -39,7 +39,7 @@ npm test
 
 ## Writing Skills
 
-Skills are markdown files in `buildloud-skills/`. Each has YAML frontmatter:
+Skills are markdown files in `.claude-plugin/skills/`. Each has YAML frontmatter:
 
 ```yaml
 ---
