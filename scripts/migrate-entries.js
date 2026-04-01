@@ -2,12 +2,13 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, unlinkSync, copyFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { homedir } from 'node:os';
+import { computeScore } from '../lib/score.js';
 
 const DEFAULT_ENTRIES = join(homedir(), '.claude', 'journey', 'entries');
 const DEFAULT_BACKUP = join(homedir(), '.claude', 'journey', 'entries-backup');
 
 // Parse heading line: ## HH:MM — project [type] [manual]? ⭐?
-const HEADING_RE = /^## (\d{2}:\d{2}) \u2014 (.+?) \[(\w+)\](?:\s*\[manual\])?(?:\s*\u2b50)?$/;
+const HEADING_RE = /^## (\d{2}:\d{2}) \u2014 (.+?) \[(\w+)\](\s*\[manual\])?(\s*\u2b50)?$/;
 // Parse blockquote: > **Public (platform):** text
 const BLOCKQUOTE_RE = /^> \*\*Public \((\w+)\):\*\*\s*(.+)$/;
 
@@ -28,6 +29,8 @@ function parseEntries(content, dateStr) {
         time: headingMatch[1],
         project: headingMatch[2].trim(),
         type: headingMatch[3],
+        source: headingMatch[4] ? 'manual_journal' : 'stop_hook',
+        notable: !!headingMatch[5],
         body: [],
         published: {},
       };
@@ -64,17 +67,28 @@ function parseEntries(content, dateStr) {
   return entries;
 }
 
+function scoreEntry(entry) {
+  return computeScore({
+    project: entry.project,
+    type: entry.type,
+    source: entry.source,
+    notable: entry.notable,
+    summary: entry.body.join('\n'),
+  });
+}
+
 function writeRawFile(entriesDir, dateStr, project, entries) {
   const [year, month, day] = dateStr.split('-');
   const dir = join(entriesDir, year, month, day, project);
   mkdirSync(dir, { recursive: true });
 
   const first = entries[0];
+  const firstScore = scoreEntry(first);
   const frontmatter = [
     '---',
     `project: ${project}`,
     `type: ${first.type}`,
-    `score: 0`,
+    `score: ${firstScore}`,
     `date: ${dateStr}T${first.time}:00Z`,
     '---',
   ].join('\n');
@@ -83,7 +97,8 @@ function writeRawFile(entriesDir, dateStr, project, entries) {
 
   for (let i = 1; i < entries.length; i++) {
     const e = entries[i];
-    content += `\n---\n\n## ${e.time} [${e.type}] (0)\n${e.body.join('\n').trimEnd()}\n`;
+    const score = scoreEntry(e);
+    content += `\n---\n\n## ${e.time} [${e.type}] (${score})\n${e.body.join('\n').trimEnd()}\n`;
   }
 
   writeFileSync(join(dir, 'raw.md'), content);

@@ -102,9 +102,10 @@ describe('migration', () => {
     assert.ok(existsSync(join(BACKUP, '2026', '03', '2026-03-21.md')));
   });
 
-  it('handles entries with star emoji and manual tags', async () => {
+  it('scores entries using computeScore instead of hardcoding 0', async () => {
     const dir = join(ENTRIES, '2026', '03');
     mkdirSync(dir, { recursive: true });
+    // [insight] = 3, [manual] = +3, ⭐ (notable) = +2 → score 8
     writeFileSync(join(dir, '2026-03-21.md'),
       '# 2026-03-21\n\n## 14:00 \u2014 proj [insight] [manual] \u2b50\nBig realization.\n');
 
@@ -114,6 +115,11 @@ describe('migration', () => {
     const raw = readFileSync(join(ENTRIES, '2026', '03', '21', 'proj', 'raw.md'), 'utf8');
     assert.ok(raw.includes('type: insight'));
     assert.ok(raw.includes('Big realization.'));
+    // Score should be computed, not 0
+    const scoreMatch = raw.match(/score: (\d+)/);
+    assert.ok(scoreMatch, 'frontmatter should contain score');
+    const score = parseInt(scoreMatch[1], 10);
+    assert.ok(score >= 8, `expected score >= 8 for manual+insight+notable, got ${score}`);
   });
 
   it('returns stats with counts', async () => {
